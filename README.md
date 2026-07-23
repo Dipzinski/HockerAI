@@ -1,6 +1,6 @@
 # Hocker North America — AI Implementation How to Get Started
 
-## What is this, in plain English?
+## What is this in plain English?
 
 This project is a set of AI helper Agents that do the slow and manual parts of finding and verifying leads.
 
@@ -58,12 +58,12 @@ commands required.
 
 ---
 
-## How to actually use it
+## How to use it
 
 You don't need to know any special commands. Just type what you want in plain
 English, for example:
 
-- *"Find me 10 leads in metal fabrication in Ohio"*
+- *"Find me 10 leads"*
 - *"Enrich this lead: [company name]"*
 - *"Draft LinkedIn outreach for the leads we just enriched"*
 
@@ -81,16 +81,6 @@ Once everything's installed, open the project and type:
 
 If Claude gives you a sensible answer describing lead generation, enrichment, and
 LinkedIn outreach, your setup worked.
-
----
-
-## If something goes wrong
-
-- **Claude Desktop won't open the project / can't find it** — double-check you
-  selected the exact folder GitHub Desktop saved in Step 3
-- **"Feature not available" messages** — this usually means the Claude plan on the
-  account isn't the right tier; check the current plans at claude.com
-- **Anything else** — reach out to [name] (the person who set this project up)
 
 ---
 
