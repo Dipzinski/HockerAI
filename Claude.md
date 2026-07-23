@@ -2,7 +2,7 @@
 
 **Company:** Hocker North America (industrial dust collection systems)
 **Project goal:** Use AI agents to increase sales efficiency — find more of the right leads, qualify them faster, and get personalized outreach in front of the right decision-makers sooner, without sacrificing accuracy or reputation.
-**Status:** v0.1 — 3 subagents drafted, needs ICP/CRM decisions before going live
+**Status:** v0.2 — two-tier pipeline (base sweep + automated daily scan) with on-demand outreach drafting, master CSV, and Markdown reporting in place; needs ICP/CRM decisions before going live
 **Owner:** [name]
 
 ---
@@ -21,33 +21,67 @@ Hocker's sales process today likely relies on manual prospecting, generic outrea
 
 ## 2. The pipeline
 
-Three subagents, each with a single job, chained in sequence:
+Two entry points feed one shared enrichment stage; outreach drafting happens on demand afterward, not automatically:
 
 ```
-┌─────────────────────┐     ┌──────────────────────────────┐     ┌───────────────────────────┐
-│   Lead Generation    │ ──▶ │ Lead Enrichment &             │ ──▶ │ LinkedIn Outreach          │
-│   Agent               │     │ Qualification Agent           │     │ Drafting Agent              │
-│                       │     │                                │     │                             │
-│ Finds new candidate   │     │ Researches compliance/growth  │     │ Drafts connection request + │
-│ companies from scratch│     │ signals, scores ICP fit,       │     │ follow-up sequence for       │
-│ across an industry/   │     │ IDs decision-maker, produces   │     │ Hot/Warm leads. Refuses to   │
-│ region                │     │ enriched CRM-ready record       │     │ draft for Archive leads      │
-└─────────────────────┘     └──────────────────────────────┘     └───────────────────────────┘
-   lead-generation.md          lead-enrichment-qualification.md      linkedin-outreach-drafting.md
+BASE SWEEP (manual, occasional)            DAILY SCAN (automatic, every day)
+┌─────────────────────┐                    ┌──────────────────────────┐
+│  Lead Generation      │                    │  Daily Lead Scan          │
+│  Agent                 │                    │  Agent                     │
+│  Wide net: last 2-3   │                    │  Delta only: signals       │
+│  months, all 7 ICP     │                    │  new since the last scan,  │
+│  industries            │                    │  dedup'd against the CSV   │
+└──────────┬───────────┘                    └────────────┬─────────────┘
+           │           lead-generation.md                 │      daily-lead-scan.md
+           └─────────────────────┬─────────────────────────┘
+                                  ▼
+                  ┌──────────────────────────────┐
+                  │  Lead Enrichment &             │
+                  │  Qualification Agent           │
+                  │  Researches compliance/growth  │
+                  │  signals, scores ICP fit, IDs  │
+                  │  decision-maker, writes each    │
+                  │  lead to master_leads.csv,      │
+                  │  produces a polished report     │
+                  └──────────────┬────────────────┘
+                                 │  lead-enrichment-qualification.md
+                                 ▼
+                  Human reads the report, picks a lead
+                                 │
+                                 ▼
+                  ┌──────────────────────────────┐
+                  │  Outreach Drafting Agent       │
+                  │  (on demand, per lead)          │
+                  │  Drafts email + LinkedIn note  │
+                  │  for that lead. Refuses to      │
+                  │  draft for Archive leads        │
+                  └──────────────────────────────┘
+                     outreach-drafting.md
 ```
+
+**Where things live:**
+- `/leads/master_leads.csv` — running master list of every enriched lead, from either sweep type. Interim source of truth until a CRM is chosen (Section 5).
+- `/leads/state/pipeline_state.json` — tracks `last_base_sweep` / `last_daily_scan` dates so the daily scan knows what's new.
+- `/leads/reports/base/YYYY-MM-DD-base-report.md` — polished report from each base sweep.
+- `/leads/reports/daily/YYYY-MM-DD-daily-report.md` — shorter delta report from each daily scan (written even when nothing new was found).
+
+**How to run each stage:**
+- **Base sweep** (run manually, whenever you want a fresh wide pass): ask Claude to run `lead-generation` for a full ICP sweep (all 7 industries, last 2–3 months), then hand its output to `lead-enrichment-qualification`.
+- **Daily scan**: runs automatically on a schedule — `daily-lead-scan` → `lead-enrichment-qualification`, no manual step needed. Can also be triggered manually the same way if you want it sooner.
+- **Outreach draft for a specific lead**: after reading a report, ask Claude to draft outreach for a company by name (or `lead_id`) — this invokes `outreach-drafting`, which looks the lead up in `master_leads.csv`.
 
 **Handoff rule between stages:**
-- Lead Gen → Enrichment: all discovered leads pass through, regardless of initial score (enrichment does the deeper research that determines the real score)
-- Enrichment → Outreach: only leads with `icp_fit_score >= 3` **and** `enrichment_confidence != Low` pass automatically. Everything else routes to manual review.
+- Lead Gen / Daily Scan → Enrichment: all discovered leads (and daily re-signals on known leads) pass through, regardless of initial score — enrichment does the deeper research that determines the real score.
+- Enrichment → Outreach: only leads with `icp_fit_score >= 3` **and** `enrichment_confidence != Low` are eligible for on-demand drafting. Everything else routes to manual review.
 - Outreach agent has final veto power via the Archive classification — a high numeric score never overrides an Archive flag (financial distress, active litigation, facility closure, etc.)
 
-**Human-in-the-loop checkpoint:** every message the Outreach agent produces is a **draft only**. Nothing sends automatically. A human reviews and sends.
+**Human-in-the-loop checkpoint:** every message the Outreach Drafting agent produces is a **draft only**, for a rep to edit before sending. Nothing sends automatically, and outreach is never generated as part of the automated base sweep or daily scan — only when a human asks for a specific lead.
 
 ---
 
 ## 3. Single source of truth: ICP
 
-**This is now unified.** The ICP, buying signals, scoring rubric, classification thresholds, and Archive-override rules live in one place: `.claude/skills/icp-scoring-rubric/SKILL.md`. All three agents (`lead-generation`, `lead-enrichment-qualification`, `linkedin-outreach-drafting`) read that file instead of defining or restating the ICP themselves — if you need to revise the ICP, edit it there only.
+**This is now unified.** The ICP, buying signals, scoring rubric, classification thresholds, and Archive-override rules live in one place: `.claude/skills/icp-scoring-rubric/SKILL.md`. All four agents (`lead-generation`, `daily-lead-scan`, `lead-enrichment-qualification`, `outreach-drafting`) read that file instead of defining or restating the ICP themselves — if you need to revise the ICP, edit it there only.
 
 **Target industries, in priority order:**
 1. Woodworking / cabinetry / furniture manufacturing
@@ -85,13 +119,14 @@ These aren't optional and shouldn't be loosened for volume:
 ## 5. What's decided vs. still open
 
 **Decided:**
-- Three-stage pipeline structure and handoff logic
+- Two-tier pipeline structure (base sweep + daily scan) sharing one enrichment stage, plus on-demand outreach drafting, and handoff logic
 - Output schemas for each stage (see individual agent files)
 - Hot / Warm / Archive classification and what each unlocks
+- `/leads/master_leads.csv` as the interim source of truth until a CRM is chosen — every enriched lead lives there regardless of which sweep found it
 
-**Open — needs your uncle's input before this goes live:**
+**Open — needs owner/leadership input before this goes live:**
 - [ ] Confirm real ICP criteria and weighting (Section 3 above) — replace placeholder
-- [ ] Which CRM this integrates with, and field-level mapping
+- [ ] Which CRM this integrates with, and field-level mapping (until then, `/leads/master_leads.csv` is the working system of record)
 - [ ] Where OSHA/EPA compliance data gets sourced from (public DB vs. paid tool) — state-plan states (like Cal/OSHA) have known coverage gaps that need a workaround
 - [ ] Threshold/process for automatic hand-off vs. manual review at each stage
 - [ ] Who owns final human review and send for outreach drafts
@@ -120,7 +155,12 @@ Suggested
 ## 7. File map
 
 - `.claude/skills/icp-scoring-rubric/SKILL.md` — **single source of truth**: ICP, buying signals, 0–11 scoring rubric, classification thresholds, Archive-override rules
-- `lead-generation.md` — Stage 1: discovers new candidate companies, initial scoring
-- `lead-enrichment-qualification.md` — Stage 2: deep research, ICP scoring, decision-maker ID
-- `linkedin-outreach-drafting.md` — Stage 3: drafts personalized outreach, enforces Archive refusals
-- `README.md` (this file) — project overview, pipeline structure, cross-agent guardrails, open decisions
+- `.claude/agents/lead-generation.md` — Base sweep: discovers new candidate companies across a wide window (2–3 months), all 7 ICP industries
+- `.claude/agents/daily-lead-scan.md` — Daily scan (automated): delta-only, finds new companies or new signals on known companies since the last run
+- `.claude/agents/lead-enrichment-qualification.md` — Shared enrichment stage: deep research, ICP scoring, decision-maker ID, writes to `master_leads.csv`, generates the polished report
+- `.claude/agents/outreach-drafting.md` — On-demand, per-lead: drafts personalized email + LinkedIn note, enforces Archive refusals
+- `leads/master_leads.csv` — master list of every enriched lead (interim source of truth)
+- `leads/state/pipeline_state.json` — last base-sweep / daily-scan run dates
+- `leads/reports/base/` — polished Markdown reports from each base sweep
+- `leads/reports/daily/` — delta Markdown reports from each daily scan
+- `Claude.md` (this file) — project overview, pipeline structure, cross-agent guardrails, open decisions
