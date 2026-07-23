@@ -49,8 +49,6 @@ Three subagents, each with a single job, chained in sequence:
 
 **This is now unified.** The ICP, buying signals, scoring rubric, classification thresholds, and Archive-override rules live in one place: `.claude/skills/icp-scoring-rubric/SKILL.md`. All three agents (`lead-generation`, `lead-enrichment-qualification`, `linkedin-outreach-drafting`) read that file instead of defining or restating the ICP themselves — if you need to revise the ICP, edit it there only.
 
-The rubric there is still a v0.1 placeholder pending your uncle's confirmation of the real criteria/weighting (see Section 5, open items). It currently defines:
-
 **Target industries, in priority order:**
 1. Woodworking / cabinetry / furniture manufacturing
 2. Metal fabrication, grinding, welding, finishing
@@ -105,7 +103,7 @@ These aren't optional and shouldn't be loosened for volume:
 
 ## 6. How to measure "more efficient and more sales"
 
-Suggested metrics to track once live (adjust with your uncle):
+Suggested 
 
 | Metric | What it tells you |
 |---|---|
