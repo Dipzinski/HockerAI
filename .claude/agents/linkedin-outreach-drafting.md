@@ -127,4 +127,4 @@ Flags for human review: [e.g. "verify operating status before sending" / "headco
 - [ ] How long should a Warm lead sit before re-enrichment vs. being escalated to a full sequence?
 - [ ] Standing policy for "financial distress" companies (bankruptcy, closures) — always hold for manual verification, or archive automatically above a certain severity?
 - [ ] Message cadence/timing for the 2-message Hot follow-up sequence (days between sends)
-- [ ] Tone/voice guide specifics — current drafts are functional but should be refined against your uncle's actual brand voice
+- [ ] Tone/voice guide specifics
