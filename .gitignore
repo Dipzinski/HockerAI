@@ -1,5 +1,5 @@
 # Raw OSHA downloads (~3.7 GB) and the DuckDB file are rebuilt by `python -m hocker build`.
-data/
+/data/
 .venv/
 __pycache__/
 .pytest_cache/

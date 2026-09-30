@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HockerAI Lead Finder</title>
+<meta name="description" content="Dust-collection sales leads in the Great Lakes states, scored from public OSHA inspection records.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/4.1.1/plotly-geo.min.js" charset="utf-8"></script>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+    --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11, 11, 11, 0.10);
+    --warm: #2a78d6; --hot: #eb6834;
+    /* score parts: industry, dust, recency, size (categorical slots 1-4) */
+    --part-1: #2a78d6; --part-2: #eb6834; --part-3: #1baf7a; --part-4: #eda100;
+    --good: #006300; --warn-bg: #fdf1dc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+      --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
+      --warm: #3987e5; --hot: #d95926;
+      --part-1: #3987e5; --part-2: #d95926; --part-3: #199e70; --part-4: #c98500;
+      --good: #0ca30c; --warn-bg: #3a2f14;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
+    --warm: #3987e5; --hot: #d95926;
+    --part-1: #3987e5; --part-2: #d95926; --part-3: #199e70; --part-4: #c98500;
+    --good: #0ca30c; --warn-bg: #3a2f14;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 1180px; margin: 0 auto; padding: 32px 16px 48px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 6px; }
+  h2 { font-size: 17px; margin: 0 0 10px; }
+  h3 { font-size: 15px; margin: 16px 0 6px; }
+  .lede { color: var(--ink-2); margin: 0 0 6px; max-width: 800px; }
+  .fine { font-size: 13px; color: var(--ink-2); margin: 0 0 20px; max-width: 800px; }
+  a { color: var(--warm); }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: end; margin-bottom: 16px; }
+  .filters label { display: grid; gap: 4px; font-size: 13px; color: var(--ink-2); }
+  .filters label.check { display: flex; align-items: center; gap: 6px; padding-bottom: 8px; }
+  select, input[type=search] {
+    font: inherit; color: var(--ink); background: var(--surface);
+    border: 1px solid var(--axis); border-radius: 8px; padding: 7px 10px; min-width: 160px;
+  }
+  input[type=search] { min-width: 200px; }
+
+  .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .tile, .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+  .tile { padding: 14px 16px; }
+  .tile .label { font-size: 13px; color: var(--ink-2); }
+  .tile .value { font-size: 28px; font-weight: 600; line-height: 1.25; }
+  .tile .sub { font-size: 13px; color: var(--ink-2); }
+
+  .grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 16px; margin-bottom: 16px; }
+  .card { padding: 16px; min-width: 0; }
+  #map { height: 430px; }
+  .legend { display: flex; gap: 14px; font-size: 13px; color: var(--ink-2); margin-top: 6px; flex-wrap: wrap; }
+  .key { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+  .key.sq { border-radius: 2px; }
+
+  .bars { display: grid; gap: 6px; margin-bottom: 14px; }
+  .bar-row { display: grid; grid-template-columns: 150px minmax(0, 1fr) 44px; gap: 8px; align-items: center; font-size: 13px; }
+  .bar-row .name { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar-track { height: 14px; }
+  .bar { height: 14px; background: var(--warm); border-radius: 0 4px 4px 0; min-width: 2px; }
+  .bar-row .val { text-align: right; font-variant-numeric: tabular-nums; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-weight: 600; color: var(--ink-2); font-size: 13px; padding: 6px 8px; border-bottom: 1px solid var(--axis); white-space: nowrap; }
+  td { padding: 7px 8px; border-bottom: 1px solid var(--grid); vertical-align: middle; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover, tbody tr:focus { background: var(--grid); outline: none; }
+  tbody tr.selected { background: var(--grid); }
+  .table-wrap { overflow-x: auto; }
+  .tier { display: inline-flex; align-items: center; gap: 5px; }
+  .status { font-size: 13px; }
+  .status.ready { color: var(--good); }
+  .status.held { color: var(--ink-2); }
+
+  .score { display: flex; align-items: center; gap: 8px; min-width: 130px; }
+  .stack { display: flex; gap: 2px; height: 10px; width: 88px; }
+  .stack span { height: 100%; }
+  .stack span:first-child { border-radius: 4px 0 0 4px; }
+  .stack span:last-of-type { border-radius: 0 4px 4px 0; }
+  .stack .empty { background: var(--grid); }
+
+  #detail { margin-bottom: 16px; }
+  #detail[hidden] { display: none; }
+  .detail-head { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+  .close { font: inherit; background: none; border: 1px solid var(--axis); color: var(--ink); border-radius: 8px; padding: 4px 10px; cursor: pointer; }
+  .meta { color: var(--ink-2); font-size: 14px; margin: 2px 0 10px; }
+  .parts { display: flex; gap: 2px; height: 22px; max-width: 520px; }
+  .parts span { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #0b0b0b; }
+  .parts span:first-child { border-radius: 4px 0 0 4px; }
+  .parts span:last-child { border-radius: 0 4px 4px 0; }
+  .insp { border-top: 1px solid var(--grid); padding: 8px 0; font-size: 14px; }
+  .insp ul { margin: 4px 0 0; padding-left: 18px; }
+  .chip { display: inline-block; font-size: 12px; border: 1px solid var(--axis); border-radius: 999px; padding: 0 7px; margin-left: 4px; color: var(--ink-2); }
+  .brief { background: var(--page); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-size: 14px; }
+  .brief pre { white-space: pre-wrap; font: inherit; margin: 6px 0 0; }
+  .notice { background: var(--warn-bg); border-radius: 8px; padding: 8px 12px; font-size: 14px; }
+  .more { margin-top: 10px; font: inherit; background: var(--surface); color: var(--ink); border: 1px solid var(--axis); border-radius: 8px; padding: 6px 14px; cursor: pointer; }
+
+  .method { font-size: 14px; color: var(--ink-2); }
+  .method table { font-size: 14px; max-width: 760px; margin-bottom: 12px; }
+  .method td, .method th { color: var(--ink); }
+
+  @media (max-width: 860px) {
+    .grid { grid-template-columns: 1fr; }
+    .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #map { height: 340px; }
+    .bar-row { grid-template-columns: 110px minmax(0, 1fr) 40px; }
+    .hide-sm { display: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>HockerAI lead finder</h1>
+  <p class="lede" id="lede">Manufacturers in the Great Lakes states that are likely to need dust collection, scored from public OSHA inspection records.</p>
+  <p class="fine">A prototype built for Hocker North America (industrial dust collection, Ada, MI); it is not in production use. Data: US Department of Labor OSHA enforcement records. A citation is an allegation until it is final. Leads with a recent serious incident or a contested citation are held for human review. <a href="https://github.com/Dipzinski/HockerAI">Code and method on GitHub</a>.</p>
+
+  <div class="filters" role="group" aria-label="Filters">
+    <label>Tier
+      <select id="f-tier"><option value="Hot">Hot</option><option value="Warm">Warm</option><option value="all">Hot and Warm</option></select>
+    </label>
+    <label>State <select id="f-state"><option value="all">All states</option></select></label>
+    <label>Industry <select id="f-industry"><option value="all">All industries</option></select></label>
+    <label>Search <input type="search" id="f-search" placeholder="Company or city"></label>
+    <label class="check"><input type="checkbox" id="f-ready"> Outreach-ready only</label>
+  </div>
+
+  <section class="tiles" aria-label="Summary">
+    <div class="tile"><div class="label">Leads shown</div><div class="value" id="t-shown">-</div><div class="sub" id="t-shown-sub"></div></div>
+    <div class="tile"><div class="label">Outreach-ready</div><div class="value" id="t-ready">-</div><div class="sub">Not held, confidence not low</div></div>
+    <div class="tile"><div class="label">Dust-specific evidence</div><div class="value" id="t-dust">-</div><div class="sub">Silica, ventilation, air contaminants, dust NEP</div></div>
+    <div class="tile"><div class="label">Held for review</div><div class="value" id="t-held">-</div><div class="sub">Serious incident or contested citation</div></div>
+  </section>
+
+  <section class="card" id="detail" hidden aria-live="polite"></section>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Where the leads are</h2>
+      <div id="map" role="img" aria-label="Map of lead locations by ZIP code"></div>
+      <div class="legend"><span><span class="key" style="background:var(--hot)"></span>Hot (8-11)</span><span><span class="key" style="background:var(--warm)"></span>Warm (5-7)</span><span>Dots sit at the ZIP code center. Click one for details.</span></div>
+    </section>
+    <section class="card">
+      <h2>Leads by industry</h2>
+      <div class="bars" id="by-industry"></div>
+      <h2>Leads by state</h2>
+      <div class="bars" id="by-state"></div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2 id="table-title">Ranked leads</h2>
+    <div class="legend" style="margin:0 0 8px"><span><span class="key sq" style="background:var(--part-1)"></span>Industry fit</span><span><span class="key sq" style="background:var(--part-2)"></span>Dust evidence</span><span><span class="key sq" style="background:var(--part-3)"></span>Recency</span><span><span class="key sq" style="background:var(--part-4)"></span>Site size</span></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Facility</th><th>Location</th><th class="hide-sm">Industry</th><th class="num">Employees</th><th>Score</th><th class="hide-sm">Newest dust evidence</th><th>Status</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <button class="more" id="more" hidden>Show more</button>
+  </section>
+
+  <section class="card method" style="margin-top:16px">
+    <h2>How leads are scored</h2>
+    <table>
+      <thead><tr><th>Criterion</th><th>Points</th><th>From the OSHA records</th></tr></thead>
+      <tbody>
+        <tr><td>Industry fit</td><td>0-3</td><td>NAICS code: woodworking and metal fabrication 3; minerals and food 2; pharma, plastics, foundries 1</td></tr>
+        <tr><td>Dust evidence</td><td>0-3</td><td>3 dust-specific citation (silica, ventilation, air contaminants, metal dust, grain); 2 related citation (housekeeping, respirators, spray booths) or a dust-program inspection; 1 other serious citation</td></tr>
+        <tr><td>Recency</td><td>0-3</td><td>How recent the dust evidence is: within 12, 24, or 36 months</td></tr>
+        <tr><td>Site size</td><td>0-2</td><td>Employees at the inspected site: 20-500 earns 2; 10-19 or 501-1,000 earns 1</td></tr>
+      </tbody>
+    </table>
+    <p>Hot is 8-11 and Warm is 5-7. A facility with no citation or dust-program inspection in the last 36 months is not a lead, whatever its fit. Michigan's state plan (MIOSHA) cites its own rules, which are mapped to the same categories.</p>
+    <p id="asof"></p>
+  </section>
+</main>
+
+<script>
+(async function () {
+  const $ = (id) => document.getElementById(id);
+  const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const fmt = (n) => n == null ? "n/a" : n.toLocaleString("en-US");
+  const el = (tag, attrs = {}, ...kids) => {
+    const node = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === "text") node.textContent = v;
+      else if (k === "style") node.style.cssText = v;
+      else node.setAttribute(k, v);
+    }
+    for (const kid of kids) if (kid != null) node.append(kid);
+    return node;
+  };
+
+  const data = await fetch("data/leads.json").then((r) => r.json());
+  let briefs = {};
+  try { briefs = await fetch("data/briefs.json").then((r) => r.ok ? r.json() : {}); } catch (e) { briefs = {}; }
+  const leads = data.leads.map((d, i) => ({ ...d, rank: i + 1 }));
+  const c = data.counts;
+
+  $("lede").textContent = `${fmt(c.facilities)} manufacturing facilities in ${data.territory.join(", ")}, merged from ` +
+    `${fmt(c.inspections)} OSHA inspections since 2019, scored 0-11 for how likely they are to need dust collection now. ` +
+    `Records through ${data.as_of}.`;
+  $("asof").textContent = `Evidence window: the ${data.window_months} months before ${data.as_of}. ` +
+    `Citations checked: ${fmt(c.citations)}. Pipeline: DuckDB SQL + Python, rebuilt from the Department of Labor's daily files.`;
+
+  const industries = [...new Set(leads.map((d) => d.industry))].sort();
+  for (const s of data.territory) $("f-state").append(el("option", { value: s, text: s }));
+  for (const s of industries) $("f-industry").append(el("option", { value: s, text: s }));
+
+  const status = (d) => d.hold ? ["held", `Held: ${d.hold}`] :
+    d.confidence === "Low" ? ["held", "Low confidence"] : d.outreach_eligible ? ["ready", "Outreach-ready"] : ["held", "Review"];
+
+  let filtered = [], shown = 50, selectedId = null;
+
+  function applyFilters() {
+    const tier = $("f-tier").value, state = $("f-state").value, ind = $("f-industry").value;
+    const q = $("f-search").value.trim().toLowerCase(), ready = $("f-ready").checked;
+    filtered = leads.filter((d) =>
+      (tier === "all" || d.tier === tier) && (state === "all" || d.state === state) &&
+      (ind === "all" || d.industry === ind) && (!ready || d.outreach_eligible) &&
+      (!q || d.name.toLowerCase().includes(q) || d.city.toLowerCase().includes(q)));
+    shown = 50;
+    render();
+  }
+
+  function renderTiles() {
+    const hot = filtered.filter((d) => d.tier === "Hot").length;
+    $("t-shown").textContent = fmt(filtered.length);
+    $("t-shown-sub").textContent = `${fmt(hot)} Hot, ${fmt(filtered.length - hot)} Warm`;
+    $("t-ready").textContent = fmt(filtered.filter((d) => d.outreach_eligible).length);
+    $("t-dust").textContent = fmt(filtered.filter((d) => d.score.dust === 3).length);
+    $("t-held").textContent = fmt(filtered.filter((d) => d.hold).length);
+  }
+
+  function renderBars(id, key, order) {
+    const counts = new Map(order.map((k) => [k, 0]));
+    for (const d of filtered) counts.set(d[key], (counts.get(d[key]) || 0) + 1);
+    const rows = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    const max = Math.max(1, ...rows.map((r) => r[1]));
+    const box = $(id); box.replaceChildren();
+    for (const [name, n] of rows) {
+      box.append(el("div", { class: "bar-row", title: `${name}: ${fmt(n)} leads` },
+        el("span", { class: "name", text: name }),
+        el("div", { class: "bar-track" }, el("div", { class: "bar", style: `width:${(100 * n / max).toFixed(1)}%` })),
+        el("span", { class: "val", text: fmt(n) })));
+    }
+  }
+
+  function stack(score, cls, labels) {
+    const parts = [["industry", "--part-1", 3], ["dust", "--part-2", 3], ["recency", "--part-3", 3], ["size", "--part-4", 2]];
+    const box = el("div", { class: cls, "aria-label": `Score ${score.total} of 11` });
+    for (const [k, v] of parts) {
+      if (!score[k]) continue;
+      box.append(el("span", { style: `flex:${score[k]};background:var(${v})`, title: `${k}: ${score[k]}`, text: labels ? String(score[k]) : "" }));
+    }
+    if (score.total < 11) box.append(el("span", { class: "empty", style: `flex:${11 - score.total}` }));
+    return box;
+  }
+
+  function renderTable() {
+    const body = $("rows"); body.replaceChildren();
+    for (const d of filtered.slice(0, shown)) {
+      const [cls, label] = status(d);
+      const tr = el("tr", { tabindex: "0", "data-id": d.id },
+        el("td", { class: "num", text: String(d.rank) }),
+        el("td", { text: d.name }),
+        el("td", { text: `${d.city}, ${d.state}` }),
+        el("td", { class: "hide-sm", text: d.industry }),
+        el("td", { class: "num", text: fmt(d.employees) }),
+        el("td", {}, el("div", { class: "score" }, stack(d.score, "stack"), el("span", { text: `${d.score.total}/11` }))),
+        el("td", { class: "hide-sm", text: d.evidence_date || "" }),
+        el("td", {}, el("span", { class: `status ${cls}`, text: label })));
+      if (d.id === selectedId) tr.classList.add("selected");
+      tr.addEventListener("click", () => showDetail(d));
+      tr.addEventListener("keydown", (e) => { if (e.key === "Enter") showDetail(d); });
+      body.append(tr);
+    }
+    $("more").hidden = filtered.length <= shown;
+    $("table-title").textContent = `Ranked leads (${fmt(filtered.length)})`;
+  }
+
+  function renderMap() {
+    const pts = (tier) => filtered.filter((d) => d.tier === tier && d.lat != null);
+    const trace = (tier, color, size) => {
+      const p = pts(tier);
+      return {
+        type: "scattergeo", mode: "markers", name: tier, lat: p.map((d) => d.lat), lon: p.map((d) => d.lon),
+        customdata: p.map((d) => d.id),
+        text: p.map((d) => `${d.name}<br>${d.city}, ${d.state}<br>${tier} ${d.score.total}/11`),
+        hovertemplate: "%{text}<extra></extra>",
+        marker: { size, color, opacity: 0.9, line: { width: 1, color: css("--surface") } },
+      };
+    };
+    const layout = {
+      margin: { l: 0, r: 0, t: 0, b: 0 }, paper_bgcolor: "rgba(0,0,0,0)", showlegend: false,
+      hoverlabel: { bgcolor: css("--surface"), bordercolor: css("--axis"), font: { color: css("--ink"), size: 13 } },
+      geo: {
+        projection: { type: "mercator" }, fitbounds: "locations",
+        showland: true, landcolor: css("--surface"), showlakes: true, lakecolor: css("--page"),
+        showsubunits: true, subunitcolor: css("--axis"), showcountries: true, countrycolor: css("--axis"),
+        showcoastlines: false, bgcolor: "rgba(0,0,0,0)", resolution: 50, scope: "north america",
+      },
+    };
+    Plotly.react("map", [trace("Warm", css("--warm"), 7), trace("Hot", css("--hot"), 9)], layout,
+      { displayModeBar: false, responsive: true });
+  }
+
+  function showDetail(d) {
+    selectedId = d.id;
+    const box = $("detail"); box.replaceChildren(); box.hidden = false;
+    const [cls, label] = status(d);
+    box.append(el("div", { class: "detail-head" },
+      el("div", {},
+        el("h2", { text: d.name }),
+        el("p", { class: "meta", text: `${d.city}, ${d.state} ${d.zip || ""} · ${d.industry} (NAICS ${d.naics}) · ` +
+          `${d.employees ? fmt(d.employees) + " employees at the site" : "site headcount unknown"} · ` +
+          `confidence ${d.confidence}` })),
+      (() => { const b = el("button", { class: "close", text: "Close" }); b.onclick = () => { box.hidden = true; selectedId = null; renderTable(); }; return b; })()));
+    box.append(el("p", { style: "margin:0 0 6px" }, el("strong", { text: `${d.tier} · ${d.score.total}/11 · ` }),
+      el("span", { class: `status ${cls}`, text: label })));
+    box.append(stack(d.score, "parts", true));
+    box.append(el("p", { class: "meta", style: "margin-top:6px",
+      text: `Industry ${d.score.industry}/3 · Dust evidence ${d.score.dust}/3 (${d.dust_reason}) · Recency ${d.score.recency}/3 · Site size ${d.score.size}/2` }));
+
+    const b = briefs[d.id];
+    if (b && b.why_now) {
+      const brief = el("div", { class: "brief" },
+        el("strong", { text: b.status === "verified" ? "AI brief (checked against the records)" : "AI brief (needs a person to fix it)" }),
+        el("p", { text: b.why_now }),
+        el("ul", {}, ...b.talking_points.map((t) => el("li", { text: `${t.point} (inspection ${t.inspection_ids.join(", ")})` }))),
+        el("strong", { text: `Draft email to: ${b.suggested_contact_role}` }),
+        el("pre", { text: `Subject: ${b.email_subject}\n\n${b.email_body}` }));
+      box.append(el("h3", { text: "Lead brief" }), brief);
+    } else if (d.hold) {
+      box.append(el("p", { class: "notice", text: "On hold: a person reviews this lead before any outreach. No draft is written for held leads." }));
+    }
+
+    box.append(el("h3", { text: `Dust-related evidence, last ${data.window_months} months` }));
+    for (const i of d.inspections) {
+      const head = el("div", {}, el("a", { href: i.url, target: "_blank", rel: "noopener", text: `Inspection ${i.inspection_id}` }),
+        el("span", { text: ` · opened ${i.opened}` }));
+      if (i.dust_program) head.append(el("span", { class: "chip", text: i.dust_program }));
+      const list = el("ul");
+      for (const ct of i.citations) {
+        list.append(el("li", { text: `${ct.standard}: ${ct.title} · ${ct.type} · issued ${ct.issued}` +
+          (ct.penalty_usd ? ` · $${fmt(ct.penalty_usd)}` : "") + (ct.under_contest ? " · under contest" : "") },
+          el("span", { class: "chip", text: ct.category === "dust" ? "dust-specific" : "dust-related" })));
+      }
+      if (i.other_citations) list.append(el("li", { text: `${i.other_citations} other citation(s) not related to dust` }));
+      box.append(el("div", { class: "insp" }, head, list));
+    }
+    renderTable();
+    box.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function render() {
+    renderTiles();
+    renderBars("by-industry", "industry", industries);
+    renderBars("by-state", "state", data.territory);
+    renderTable();
+    renderMap();
+  }
+
+  for (const id of ["f-tier", "f-state", "f-industry", "f-ready"]) $(id).addEventListener("change", applyFilters);
+  $("f-search").addEventListener("input", applyFilters);
+  $("more").addEventListener("click", () => { shown += 100; renderTable(); });
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", renderMap);
+  applyFilters();
+  $("map").on("plotly_click", (ev) => {
+    const id = ev.points[0].customdata;
+    const d = leads.find((x) => x.id === id);
+    if (d) showDetail(d);
+  });
+})();
+</script>
+</body>
+</html>

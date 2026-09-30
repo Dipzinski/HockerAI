@@ -1,0 +1,94 @@
+{
+ "as_of": "2026-09-23",
+ "load": {
+  "inspection_rows_national": 5202096,
+  "csv_rows_rejected": 0,
+  "raw_inspection": 14464,
+  "raw_violation": 38606,
+  "raw_emphasis_codes": 17304,
+  "raw_accident_injury": 1550,
+  "raw_accident": 1535
+ },
+ "counts": {
+  "inspections_national": 5202096,
+  "inspections": 14445,
+  "citations": 36472,
+  "facilities": 8914,
+  "hot": 570,
+  "warm": 1661,
+  "archive": 6683,
+  "hot_eligible": 545,
+  "held_hot": 25,
+  "low_conf_hot": 0,
+  "held_all": 154,
+  "previous_run": true,
+  "new_hot_since_last_run": 0
+ },
+ "checks": [
+  {
+   "name": "inspection IDs are unique",
+   "passed": true,
+   "detail": "14,445 inspections"
+  },
+  {
+   "name": "every inspection maps to exactly one facility",
+   "passed": true,
+   "detail": "8,914 facilities"
+  },
+  {
+   "name": "every citation belongs to a loaded inspection",
+   "passed": true,
+   "detail": "36,472 citations"
+  },
+  {
+   "name": "withdrawn citations are excluded",
+   "passed": true,
+   "detail": "0 withdrawn citations kept"
+  },
+  {
+   "name": "every cited standard was classified",
+   "passed": true,
+   "detail": "2,488 distinct standards"
+  },
+  {
+   "name": "facilities are in the territory and target industries",
+   "passed": true,
+   "detail": "states MI, OH, IN, IL, WI"
+  },
+  {
+   "name": "inspection dates are inside the load window",
+   "passed": true,
+   "detail": "2019-01-01 to as-of date"
+  },
+  {
+   "name": "site headcounts are 1-4,999 or missing",
+   "passed": true,
+   "detail": "24 company-wide totals cleared"
+  },
+  {
+   "name": "every facility has exactly one score",
+   "passed": true,
+   "detail": "1 score per facility"
+  },
+  {
+   "name": "scores are 0-11 and equal the sum of their parts",
+   "passed": true,
+   "detail": "all totals consistent"
+  },
+  {
+   "name": "tiers match the score cutoffs",
+   "passed": true,
+   "detail": "Hot 8-11, Warm 5-7, Archive 0-4 or no recent evidence"
+  },
+  {
+   "name": "held or low-confidence leads are never outreach-eligible",
+   "passed": true,
+   "detail": "154 leads on hold"
+  },
+  {
+   "name": "every Hot lead has cited dust evidence",
+   "passed": true,
+   "detail": "all Hot leads backed by records"
+  }
+ ]
+}
