@@ -3,478 +3,485 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>HockerAI — Dust Collection Sales Pipeline</title>
-<meta name="description" content="Prioritized industrial sales intelligence and outreach pipeline for Hocker North America.">
+<title>HockerAI — Sales Intelligence</title>
+<meta name="description" content="Industrial dust collection sales pipeline for Hocker North America in Space Black design.">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/4.1.1/plotly-geo.min.js" charset="utf-8"></script>
 <style>
   :root {
-    color-scheme: light;
-    --bg-page: #f8fafc;
-    --bg-surface: #ffffff;
-    --bg-subtle: #f1f5f9;
-    --bg-hover: #e2e8f0;
-    --border: #e2e8f0;
-    --border-strong: #cbd5e1;
-    --ink-primary: #0f172a;
-    --ink-secondary: #475569;
-    --ink-muted: #64748b;
-
-    --brand: #ea580c;
-    --brand-hover: #c2410c;
-    --brand-subtle: #fff7ed;
-    --brand-border: #fed7aa;
-
-    --hot: #ea580c;
-    --hot-bg: #fff7ed;
-    --warm: #0284c7;
-    --warm-bg: #f0f9ff;
-    --success: #16a34a;
-    --success-bg: #f0fdf4;
-    --purple: #7c3aed;
-    --purple-bg: #faf5ff;
-
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08);
-
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 14px;
-    --radius-full: 9999px;
-  }
-
-  [data-theme="dark"] {
     color-scheme: dark;
-    --bg-page: #0b0f17;
-    --bg-surface: #131b26;
-    --bg-subtle: #1c2636;
-    --bg-hover: #263345;
-    --border: #243042;
-    --border-strong: #334155;
-    --ink-primary: #f8fafc;
-    --ink-secondary: #cbd5e1;
-    --ink-muted: #94a3b8;
+    --bg-base: #07080a;
+    --bg-surface: #101318;
+    --bg-surface-elevated: #161a22;
+    --bg-card: #12151c;
+    --bg-card-hover: #181d26;
+    --bg-glass: rgba(16, 19, 24, 0.85);
+
+    --border: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(255, 255, 255, 0.16);
+    --border-strong: rgba(255, 255, 255, 0.22);
+
+    --text-primary: #f5f5f7;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --text-faint: #4b5563;
 
     --brand: #f97316;
-    --brand-hover: #fb923c;
-    --brand-subtle: #2d180c;
-    --brand-border: #7c2d12;
+    --brand-glow: rgba(249, 115, 22, 0.15);
+    --brand-border: rgba(249, 115, 22, 0.35);
 
     --hot: #fb923c;
-    --hot-bg: #2d180c;
-    --warm: #38bdf8;
-    --warm-bg: #0c2338;
-    --success: #4ade80;
-    --success-bg: #092e16;
-    --purple: #c084fc;
-    --purple-bg: #24133d;
+    --hot-bg: rgba(251, 146, 60, 0.12);
+    --hot-border: rgba(251, 146, 60, 0.25);
 
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+    --cyan: #38bdf8;
+    --cyan-bg: rgba(56, 189, 248, 0.1);
+    --green: #34d399;
+    --green-bg: rgba(52, 211, 153, 0.1);
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-full: 9999px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: var(--bg-page);
-    color: var(--ink-primary);
-    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
   }
 
-  .tabular { font-variant-numeric: tabular-nums; }
   a { color: var(--brand); text-decoration: none; }
   a:hover { text-decoration: underline; }
+  .tabular { font-variant-numeric: tabular-nums; }
 
-  /* Header */
-  header.app-header {
-    background: var(--bg-surface);
-    border-bottom: 1px solid var(--border);
+  /* Apple Translucent Sticky Navigation */
+  header.nav-header {
     position: sticky;
     top: 0;
-    z-index: 40;
+    z-index: 50;
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
   }
-  .header-container {
-    max-width: 1320px;
+  .header-content {
+    max-width: 1360px;
     margin: 0 auto;
     padding: 12px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 20px;
   }
-  .brand-area {
+  .brand-group {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
   }
-  .brand-logo {
-    width: 32px;
-    height: 32px;
-    background: var(--brand);
+  .brand-glyph {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #ff7a00, #ea580c);
     border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
-    font-weight: 800;
-    font-size: 16px;
-  }
-  .brand-text h1 {
-    font-size: 16px;
     font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    font-size: 15px;
+    box-shadow: 0 0 16px rgba(249, 115, 22, 0.4);
   }
-  .brand-sub {
-    font-size: 12px;
-    color: var(--ink-muted);
-  }
-
-  .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .btn {
-    font: inherit;
-    font-size: 13px;
+  .brand-titles h1 {
+    font-size: 15px;
     font-weight: 600;
-    display: inline-flex;
+    letter-spacing: -0.2px;
+    color: var(--text-primary);
+    display: flex;
     align-items: center;
-    justify-content: center;
     gap: 6px;
-    padding: 7px 12px;
-    border-radius: var(--radius-sm);
-    border: 1px solid transparent;
+  }
+  .brand-tag {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+
+  /* macOS Segmented Control Tabs */
+  .segmented-tabs {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    padding: 3px;
+    display: flex;
+    gap: 2px;
+  }
+  .seg-btn {
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    border-radius: var(--radius-full);
+    padding: 6px 14px;
     cursor: pointer;
     transition: all 0.15s ease;
     white-space: nowrap;
-  }
-  .btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
-  .btn-primary { background: var(--brand); color: #fff; border-color: var(--brand-hover); }
-  .btn-primary:hover { background: var(--brand-hover); }
-  .btn-secondary { background: var(--bg-surface); color: var(--ink-primary); border-color: var(--border-strong); }
-  .btn-secondary:hover { background: var(--bg-subtle); }
-  .btn-sm { padding: 4px 8px; font-size: 12px; }
-
-  /* Navigation Bar */
-  .nav-tabs-wrapper {
-    background: var(--bg-surface);
-    border-bottom: 1px solid var(--border);
-  }
-  .nav-tabs {
-    max-width: 1320px;
-    margin: 0 auto;
-    padding: 0 24px;
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-  }
-  .tab-btn {
-    font: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ink-muted);
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent;
-    padding: 10px 8px;
-    cursor: pointer;
     display: flex;
     align-items: center;
     gap: 6px;
-    white-space: nowrap;
-    transition: color 0.15s, border-color 0.15s;
   }
-  .tab-btn:hover { color: var(--ink-primary); }
-  .tab-btn.active {
-    color: var(--brand);
-    border-bottom-color: var(--brand);
+  .seg-btn:hover { color: var(--text-primary); }
+  .seg-btn.active {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   }
-  .tab-badge {
-    font-size: 11px;
-    background: var(--bg-subtle);
-    color: var(--ink-secondary);
+  .seg-badge {
+    font-size: 10px;
     padding: 1px 6px;
     border-radius: var(--radius-full);
-  }
-  .tab-btn.active .tab-badge {
-    background: var(--brand-subtle);
-    color: var(--brand);
+    background: rgba(255, 255, 255, 0.08);
   }
 
-  /* Main Workspace */
+  .btn-pill {
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-pill:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: var(--border-hover);
+  }
+  .btn-pill-primary {
+    background: var(--brand);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 2px 10px rgba(249, 115, 22, 0.35);
+  }
+  .btn-pill-primary:hover {
+    background: #fb923c;
+  }
+
+  /* Main Stage Container */
   main {
-    max-width: 1320px;
+    max-width: 1360px;
     margin: 0 auto;
     padding: 24px;
   }
   .tab-pane { display: none; }
-  .tab-pane.active { display: block; }
+  .tab-pane.active { display: block; animation: appleFade 0.2s ease-out; }
+  @keyframes appleFade {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
   /* ==========================================================================
-     TAB 1: ACTION CENTER (2-COLUMN MINIMAL DASHBOARD + SIDE PIPELINE WIDGET)
+     TAB 1: COMMAND CENTER (TWO COLUMN APPLE DESKTOP)
      ========================================================================== */
-  .action-dashboard {
+  .command-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 340px;
+    grid-template-columns: minmax(0, 1fr) 330px;
     gap: 24px;
     align-items: start;
   }
 
-  /* Minimal Situation Briefing Card */
-  .briefing-box {
-    background: var(--bg-surface);
+  /* Hero Situation Briefing */
+  .situation-hero {
+    background: linear-gradient(180deg, #131720 0%, #0d1016 100%);
     border: 1px solid var(--border);
-    border-left: 4px solid var(--brand);
-    border-radius: var(--radius-md);
-    padding: 16px 20px;
+    border-radius: var(--radius-lg);
+    padding: 22px 24px;
     margin-bottom: 20px;
-    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
   }
-  .briefing-box h2 {
-    font-size: 16px;
-    font-weight: 700;
-    margin-bottom: 4px;
-    display: flex;
+  .situation-hero::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 240px;
+    height: 100%;
+    background: radial-gradient(circle at right top, rgba(249, 115, 22, 0.12), transparent 70%);
+    pointer-events: none;
+  }
+  .hero-tag {
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--brand);
+    margin-bottom: 6px;
   }
-  .briefing-box p {
+  .situation-hero h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+  .situation-hero p {
     font-size: 13px;
-    color: var(--ink-secondary);
-    line-height: 1.5;
+    color: var(--text-secondary);
+    max-width: 760px;
+    line-height: 1.55;
   }
 
-  /* Filter bar for Top Leads */
-  .top-filter-bar {
+  /* Filter pills */
+  .filter-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
     flex-wrap: wrap;
   }
-  .filter-pills {
+  .pill-group {
     display: flex;
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
   }
-  .pill-btn {
+  .pill-chip {
     font: inherit;
     font-size: 12px;
-    font-weight: 500;
-    padding: 4px 10px;
+    padding: 5px 12px;
     border-radius: var(--radius-full);
     border: 1px solid var(--border);
-    background: var(--bg-surface);
-    color: var(--ink-secondary);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-secondary);
     cursor: pointer;
+    transition: all 0.15s ease;
   }
-  .pill-btn:hover { background: var(--bg-subtle); color: var(--ink-primary); }
-  .pill-btn.active {
-    background: var(--brand-subtle);
-    color: var(--brand);
+  .pill-chip:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+  }
+  .pill-chip.active {
+    background: var(--brand-glow);
     border-color: var(--brand-border);
+    color: var(--brand);
     font-weight: 600;
   }
 
-  /* Top Leads Cards List */
-  .leads-list {
+  /* Lead Cards (Apple Dark Surface) */
+  .feed-cards {
     display: flex;
     flex-direction: column;
     gap: 14px;
   }
   .lead-card {
-    background: var(--bg-surface);
+    background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 18px;
-    box-shadow: var(--shadow-sm);
-    transition: border-color 0.15s, box-shadow 0.15s;
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
   }
   .lead-card:hover {
-    border-color: var(--border-strong);
-    box-shadow: var(--shadow-md);
+    background: var(--bg-card-hover);
+    border-color: var(--border-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   }
-  .lead-head {
+  .card-top {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 12px;
+    gap: 16px;
   }
-  .lead-name {
+  .card-title-block h3 {
     font-size: 16px;
-    font-weight: 700;
-    color: var(--ink-primary);
+    font-weight: 600;
+    color: var(--text-primary);
     cursor: pointer;
+    letter-spacing: -0.2px;
   }
-  .lead-name:hover {
-    color: var(--brand);
-  }
-  .lead-meta {
+  .card-title-block h3:hover { color: var(--brand); }
+  .card-meta {
     font-size: 12px;
-    color: var(--ink-muted);
-    margin-top: 2px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
-  .score-badge {
+
+  .badge-score {
     font-size: 12px;
     font-weight: 700;
-    padding: 3px 8px;
-    border-radius: var(--radius-sm);
-    background: var(--hot-bg);
     color: var(--hot);
-    border: 1px solid var(--brand-border);
+    background: var(--hot-bg);
+    border: 1px solid var(--hot-border);
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
     white-space: nowrap;
   }
 
-  /* Catalyst bullet */
-  .lead-situation {
+  /* Catalyst Inset */
+  .catalyst-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
     font-size: 13px;
-    color: var(--ink-secondary);
-    background: var(--bg-subtle);
-    padding: 8px 12px;
-    border-radius: var(--radius-sm);
-    line-height: 1.4;
+    color: var(--text-secondary);
+    line-height: 1.45;
   }
-  .lead-situation strong {
-    color: var(--ink-primary);
-  }
+  .catalyst-box strong { color: var(--text-primary); }
 
   /* Action Box */
-  .lead-action-box {
-    background: var(--brand-subtle);
+  .action-callout {
+    background: var(--brand-glow);
     border: 1px solid var(--brand-border);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
   }
-  .action-title {
-    font-size: 11px;
+  .action-label {
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
     color: var(--brand);
     margin-bottom: 2px;
   }
-  .action-desc {
+  .action-text {
     font-size: 13px;
     font-weight: 600;
-    color: var(--ink-primary);
+    color: var(--text-primary);
   }
-  .action-role {
-    font-size: 12px;
-    color: var(--ink-muted);
+  .action-target {
+    font-size: 11px;
+    color: var(--text-muted);
     margin-top: 2px;
   }
 
-  /* Footer action row */
-  .lead-footer {
+  /* Footer Row */
+  .card-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
-    padding-top: 8px;
+    gap: 12px;
+    padding-top: 10px;
     border-top: 1px solid var(--border);
     flex-wrap: wrap;
   }
   .stage-select {
     font: inherit;
     font-size: 12px;
-    padding: 5px 8px;
-    background: var(--bg-surface);
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.06);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-    color: var(--ink-primary);
+    padding: 5px 10px;
+    cursor: pointer;
   }
 
   /* ==========================================================================
-     SIDE PIPELINE WIDGET
+     STICKY PIPELINE SIDEBAR (APPLE WIDGET STYLE)
      ========================================================================== */
-  .pipeline-sidebar {
+  .sidebar-sticky {
     position: sticky;
-    top: 80px;
+    top: 76px;
     display: flex;
     flex-direction: column;
     gap: 16px;
   }
-  .widget-card {
+  .widget-panel {
     background: var(--bg-surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     overflow: hidden;
   }
-  .widget-head {
-    padding: 14px 16px;
+  .widget-header {
+    padding: 16px 18px;
     border-bottom: 1px solid var(--border);
-    background: var(--bg-surface);
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
-  .widget-title {
-    font-size: 14px;
-    font-weight: 700;
+  .widget-header h3 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.1px;
     display: flex;
     align-items: center;
     gap: 6px;
   }
+  .widget-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
 
-  .funnel-list {
+  .funnel-rows {
     display: flex;
     flex-direction: column;
   }
-  .funnel-step {
-    padding: 12px 16px;
+  .funnel-item {
+    padding: 13px 18px;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: space-between;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: all 0.15s ease;
   }
-  .funnel-step:last-child { border-bottom: none; }
-  .funnel-step:hover { background: var(--bg-subtle); }
-  .funnel-step.active {
-    background: var(--brand-subtle);
+  .funnel-item:last-child { border-bottom: none; }
+  .funnel-item:hover { background: rgba(255, 255, 255, 0.04); }
+  .funnel-item.active {
+    background: var(--brand-glow);
     border-left: 3px solid var(--brand);
   }
-  .step-info {
+  .funnel-item-left {
     display: flex;
     flex-direction: column;
   }
-  .step-name {
+  .funnel-name {
     font-size: 13px;
-    font-weight: 600;
-    color: var(--ink-primary);
+    font-weight: 500;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
   }
-  .step-sub {
+  .funnel-desc {
     font-size: 11px;
-    color: var(--ink-muted);
+    color: var(--text-muted);
+    margin-top: 1px;
   }
-  .step-count {
+  .funnel-num {
     font-size: 15px;
     font-weight: 700;
-    color: var(--ink-primary);
+    color: var(--text-primary);
   }
-  .funnel-step.active .step-count {
-    color: var(--brand);
-  }
+  .funnel-item.active .funnel-num { color: var(--brand); }
 
-  .widget-footer {
-    padding: 12px 16px;
-    background: var(--bg-subtle);
+  .widget-bottom {
+    padding: 12px 18px;
+    background: rgba(255, 255, 255, 0.02);
     border-top: 1px solid var(--border);
     display: flex;
     align-items: center;
@@ -482,323 +489,350 @@
   }
 
   /* ==========================================================================
-     TAB 2: ALL LEADS DIRECTORY (CLEAN SEPARATE TAB)
+     TAB 2: SEPARATE ALL LEADS DIRECTORY (CLEAN DARK DATA TABLE)
      ========================================================================== */
-  .filter-panel {
+  .directory-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .dir-search-bar {
     background: var(--bg-surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 16px;
-    margin-bottom: 16px;
+    border-radius: var(--radius-lg);
+    padding: 14px 18px;
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
     align-items: center;
   }
-  select, input[type="search"] {
+  input[type="search"], select {
     font: inherit;
     font-size: 13px;
-    color: var(--ink-primary);
-    background: var(--bg-surface);
-    border: 1px solid var(--border-strong);
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-    padding: 6px 10px;
-    min-width: 140px;
+    padding: 7px 12px;
   }
   input[type="search"] { min-width: 240px; flex: 1; }
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--brand);
+  }
 
-  .dir-table-card {
+  .table-box {
     background: var(--bg-surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-lg);
     overflow: hidden;
   }
-  .dir-table-wrap {
+  .table-scroll {
     overflow-x: auto;
     max-height: 720px;
   }
-  table.leads-table {
+  table.apple-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 13px;
-    text-align: left;
   }
-  table.leads-table th {
-    background: var(--bg-subtle);
-    color: var(--ink-secondary);
+  table.apple-table th {
+    background: #0d1016;
+    color: var(--text-muted);
     font-weight: 600;
-    font-size: 12px;
-    padding: 10px 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 14px;
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
     position: sticky;
     top: 0;
-    z-index: 10;
-    cursor: pointer;
+    z-index: 5;
+    text-align: left;
   }
-  table.leads-table td {
-    padding: 10px 12px;
+  table.apple-table td {
+    padding: 12px 14px;
     border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
     vertical-align: middle;
   }
-  table.leads-table tr:hover { background: var(--bg-subtle); }
+  table.apple-table tr:hover td {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-primary);
+  }
 
-  .pagination-bar {
-    padding: 12px 16px;
+  .pagination-foot {
+    padding: 12px 18px;
     border-top: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    background: var(--bg-surface);
   }
 
   /* ==========================================================================
-     TAB 3: TERRITORY & ANALYTICS
+     TAB 3: TERRITORY MAP & MARKET INTELLIGENCE
      ========================================================================== */
-  .analytics-grid {
+  .territory-grid {
     display: grid;
     grid-template-columns: 7fr 5fr;
     gap: 20px;
   }
-  .analytics-card {
+  .territory-card {
     background: var(--bg-surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 18px;
-    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-lg);
+    padding: 20px;
   }
-  .analytics-card h3 {
+  .territory-card h3 {
     font-size: 15px;
-    font-weight: 700;
-    margin-bottom: 10px;
+    font-weight: 600;
+    margin-bottom: 12px;
   }
-  #map { height: 460px; }
+  #map { height: 480px; border-radius: var(--radius-md); }
 
   /* ==========================================================================
      TAB 4: METHODOLOGY
      ========================================================================== */
-  .method-card {
-    max-width: 860px;
+  .method-doc {
+    max-width: 840px;
     background: var(--bg-surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 24px;
-    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-lg);
+    padding: 28px;
   }
-  .method-card h3 { font-size: 16px; font-weight: 700; margin: 16px 0 6px; }
-  .method-card h3:first-child { margin-top: 0; }
-  .method-card p { font-size: 13px; color: var(--ink-secondary); line-height: 1.6; margin-bottom: 10px; }
-  .method-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
-  .method-table th, .method-table td { border: 1px solid var(--border); padding: 8px 12px; }
-  .method-table th { background: var(--bg-subtle); text-align: left; }
+  .method-doc h2 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  .method-doc h3 { font-size: 15px; font-weight: 600; margin: 20px 0 6px; color: var(--text-primary); }
+  .method-doc p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px; }
+  .method-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 13px;
+  }
+  .method-table th, .method-table td {
+    border: 1px solid var(--border);
+    padding: 9px 12px;
+  }
+  .method-table th { background: rgba(255, 255, 255, 0.03); text-align: left; }
 
   /* ==========================================================================
-     SLIDE-OVER DRAWER (DOSSIER & EMAIL DRAFT)
+     APPLE SLIDE-OVER SHEET (FACILITY DOSSIER & OUTREACH DRAFT)
      ========================================================================== */
-  .drawer-backdrop {
+  .drawer-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.45);
-    z-index: 50;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    z-index: 90;
     display: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
   }
-  .drawer-backdrop.open { display: block; }
-  .drawer-panel {
+  .drawer-overlay.open { display: block; opacity: 1; }
+  .drawer-sheet {
     position: fixed;
     top: 0;
     right: 0;
     bottom: 0;
-    width: 580px;
+    width: 560px;
     max-width: 100vw;
-    background: var(--bg-surface);
-    box-shadow: var(--shadow-lg);
-    z-index: 51;
+    background: #11141b;
+    border-left: 1px solid var(--border-hover);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.7);
+    z-index: 91;
     display: flex;
     flex-direction: column;
     transform: translateX(100%);
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .drawer-panel.open { transform: translateX(0); }
-  .drawer-head {
-    padding: 16px 20px;
+  .drawer-sheet.open { transform: translateX(0); }
+  .drawer-top {
+    padding: 20px 24px;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 12px;
+    gap: 16px;
   }
-  .drawer-head h2 { font-size: 18px; font-weight: 700; }
-  .drawer-head-meta { font-size: 12px; color: var(--ink-muted); margin-top: 2px; }
-  .drawer-close {
-    background: none;
+  .drawer-top h2 { font-size: 18px; font-weight: 600; color: #fff; }
+  .drawer-top-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .drawer-close-btn {
+    background: rgba(255, 255, 255, 0.08);
     border: none;
-    font-size: 20px;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-full);
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
   }
-  .drawer-close:hover { color: var(--ink-primary); }
+  .drawer-close-btn:hover { background: rgba(255, 255, 255, 0.16); color: #fff; }
 
-  .drawer-body {
-    padding: 20px;
+  .drawer-scroll {
+    padding: 24px;
     overflow-y: auto;
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 20px;
   }
-  .drawer-section-title {
+  .drawer-block-title {
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--ink-muted);
+    letter-spacing: 0.6px;
+    color: var(--text-muted);
     margin-bottom: 6px;
   }
 
-  .email-box {
-    background: var(--bg-subtle);
+  .draft-box {
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    padding: 16px;
     font-size: 13px;
   }
-  .email-pre {
-    background: var(--bg-surface);
-    border: 1px solid var(--border-strong);
+  .draft-pre {
+    background: #090a0d;
+    border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-    padding: 12px;
-    margin: 8px 0;
+    padding: 14px;
+    margin: 10px 0;
     white-space: pre-wrap;
     font-family: inherit;
-    line-height: 1.5;
+    line-height: 1.55;
+    color: var(--text-primary);
   }
 
-  /* Toast */
-  .toast {
+  /* Toast Notification */
+  .apple-toast {
     position: fixed;
     bottom: 24px;
     right: 24px;
-    background: var(--ink-primary);
-    color: var(--bg-surface);
-    padding: 8px 16px;
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    font-weight: 600;
-    box-shadow: var(--shadow-lg);
+    background: #1f242d;
+    border: 1px solid var(--border-hover);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 500;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
     z-index: 100;
     opacity: 0;
     transform: translateY(8px);
-    transition: all 0.2s;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: none;
   }
-  .toast.show { opacity: 1; transform: translateY(0); }
+  .apple-toast.show { opacity: 1; transform: translateY(0); }
 
   @media (max-width: 960px) {
-    .action-dashboard { grid-template-columns: 1fr; }
-    .pipeline-sidebar { position: static; }
-    .analytics-grid { grid-template-columns: 1fr; }
+    .command-grid { grid-template-columns: 1fr; }
+    .sidebar-sticky { position: static; }
+    .territory-grid { grid-template-columns: 1fr; }
+    .drawer-sheet { width: 100vw; }
   }
 </style>
 </head>
 <body>
 
-<!-- Header -->
-<header class="app-header">
-  <div class="header-container">
-    <div class="brand-area">
-      <div class="brand-logo">H</div>
-      <div class="brand-text">
-        <h1>HockerAI <span style="font-size:12px; font-weight:normal; color:var(--ink-muted);">· Industrial Dust Collection Sales</span></h1>
-        <div class="brand-sub">Active OSHA & EPA compliance opportunities across 10 manufacturing states</div>
+<!-- Apple Translucent Header -->
+<header class="nav-header">
+  <div class="header-content">
+    <div class="brand-group">
+      <div class="brand-glyph">H</div>
+      <div class="brand-titles">
+        <h1>HockerAI <span style="font-weight:400; color:var(--text-muted);">· Sales Intelligence</span></h1>
+        <div class="brand-tag">Industrial Dust Collection · 10-State Pipeline</div>
       </div>
     </div>
-    <div class="header-actions">
-      <button class="btn btn-secondary btn-sm" id="btn-export-csv">📥 Export CSV</button>
-      <button class="btn btn-secondary btn-sm" id="theme-toggle" title="Toggle Dark/Light">🌙</button>
-    </div>
-  </div>
 
-  <!-- Navigation -->
-  <div class="nav-tabs-wrapper">
-    <nav class="nav-tabs" role="tablist">
-      <button class="tab-btn active" data-tab="tab-action">
-        <span>🎯 Action Center (Top Leads)</span>
-        <span class="tab-badge" id="badge-top-count">100</span>
+    <!-- Segmented Navigation -->
+    <nav class="segmented-tabs" role="tablist">
+      <button class="seg-btn active" data-tab="tab-command">
+        <span>Command Center</span>
+        <span class="seg-badge" id="badge-top">~100</span>
       </button>
-      <button class="tab-btn" data-tab="tab-directory">
-        <span>📋 All Leads Directory</span>
-        <span class="tab-badge" id="badge-all-count">4,286</span>
+      <button class="seg-btn" data-tab="tab-directory">
+        <span>Directory</span>
+        <span class="seg-badge" id="badge-all">4,286</span>
       </button>
-      <button class="tab-btn" data-tab="tab-territory">
-        <span>🗺️ Territory Map</span>
+      <button class="seg-btn" data-tab="tab-territory">
+        <span>Territory Map</span>
       </button>
-      <button class="tab-btn" data-tab="tab-methodology">
-        <span>ℹ️ How It Works</span>
+      <button class="seg-btn" data-tab="tab-methodology">
+        <span>Methodology</span>
       </button>
     </nav>
+
+    <div>
+      <button class="btn-pill" id="btn-export-csv">📥 Export CSV</button>
+    </div>
   </div>
 </header>
 
 <main>
   <!-- ==========================================================================
-       TAB 1: ACTION CENTER (MINIMAL EXPLANATION + SIDE PIPELINE WIDGET)
+       TAB 1: COMMAND CENTER (MINIMAL EXPLANATION + SIDE PIPELINE WIDGET)
        ========================================================================== -->
-  <section class="tab-pane active" id="tab-action">
-    <div class="action-dashboard">
+  <section class="tab-pane active" id="tab-command">
+    <div class="command-grid">
       
-      <!-- Left Column: The Situation & Actionable Top Leads -->
-      <div class="leads-main-column">
-        
-        <!-- Minimal Situation Card -->
-        <div class="briefing-box">
-          <h2><span>⚠️</span> Today's Situation & Sales Objective</h2>
+      <!-- Primary Column: Situation + Actionable Top Leads -->
+      <div>
+        <!-- Minimal Situation Briefing -->
+        <div class="situation-hero">
+          <div class="hero-tag">⚡ Current Objective</div>
+          <h2>Active Compliance Abatement Queue</h2>
           <p>
-            Industrial facilities below have active OSHA citations (combustible dust, silica, poor ventilation) or EPA TRI metal air releases with mandatory abatement deadlines.
-            <strong>Your goal:</strong> Contact the Plant Operations Manager or EHS Director to offer Hocker's engineered dust collection retrofit before their compliance deadline expires.
+            The facilities below have recent OSHA enforcement citations (combustible dust, silica, ventilation) or EPA TRI metal air releases with mandatory abatement deadlines.
+            <strong>Action:</strong> Contact the Plant Operations Manager or EHS Director to offer Hocker's engineered dust collection retrofit before their compliance deadline expires.
           </p>
         </div>
 
-        <!-- Filter pills -->
-        <div class="top-filter-bar">
-          <div class="filter-pills">
-            <span style="font-size:12px; font-weight:600; color:var(--ink-muted);">Filter Top Leads:</span>
-            <button class="pill-btn active" data-filter="all">All Top (~100)</button>
-            <button class="pill-btn" data-filter="nep">🌪️ Combustible Dust NEP</button>
-            <button class="pill-btn" data-filter="silica">🪨 Silica Crystalline</button>
-            <button class="pill-btn" data-filter="tri">🏭 EPA Metal Releases</button>
-            <button class="pill-btn" data-filter="wood">🪚 Woodworking</button>
-            <button class="pill-btn" data-filter="metal">⚙️ Metal Fab</button>
+        <!-- Filter Chips -->
+        <div class="filter-bar">
+          <div class="pill-group">
+            <span style="font-size:11px; font-weight:600; text-transform:uppercase; color:var(--text-muted); margin-right:4px;">Filter:</span>
+            <button class="pill-chip active" data-filter="all">All Priority (~100)</button>
+            <button class="pill-chip" data-filter="nep">🌪️ Combustible Dust NEP</button>
+            <button class="pill-chip" data-filter="silica">🪨 Silica Crystalline</button>
+            <button class="pill-chip" data-filter="tri">🏭 EPA Metal Releases</button>
+            <button class="pill-chip" data-filter="wood">🪚 Woodworking</button>
+            <button class="pill-chip" data-filter="metal">⚙️ Metal Fab</button>
           </div>
-          <div style="font-size:12px; color:var(--ink-muted);">
-            Showing <strong id="action-shown-count" style="color:var(--ink-primary)">-</strong> priority prospects
+          <div style="font-size:12px; color:var(--text-muted);">
+            Showing <strong id="action-count" style="color:var(--text-primary);">-</strong> targets
           </div>
         </div>
 
-        <!-- The List of Top Leads with Simple Next Actions -->
-        <div class="leads-list" id="action-leads-list">
+        <!-- Top Leads Feed -->
+        <div class="feed-cards" id="lead-cards-container">
           <!-- Rendered by JS -->
         </div>
       </div>
 
-      <!-- Right Column: SIDE PIPELINE WIDGET -->
-      <aside class="pipeline-sidebar">
-        <div class="widget-card">
-          <div class="widget-head">
-            <div class="widget-title">
-              <span>📊</span> Outreach Pipeline
+      <!-- Right Column: SIDE PIPELINE WIDGET (Space Black Style) -->
+      <aside class="sidebar-sticky">
+        <div class="widget-panel">
+          <div class="widget-header">
+            <div>
+              <h3><span>📊</span> Sales Funnel</h3>
+              <div class="widget-sub">Click any stage to filter</div>
             </div>
-            <span style="font-size:11px; color:var(--ink-muted);" title="Click any stage to filter">Click stage to filter</span>
+            <span class="badge-score" id="funnel-total-badge" style="font-size:11px; padding:2px 8px;">Active</span>
           </div>
 
-          <div class="funnel-list" id="pipeline-funnel-list">
+          <div class="funnel-rows" id="funnel-rows-box">
             <!-- Rendered by JS: Top Leads Found, Reached Out, In Contact, Assessment Booked, On Hold -->
           </div>
 
-          <div class="widget-footer">
-            <span style="font-size:11px; color:var(--ink-muted);">Auto-saves to browser</span>
-            <button class="btn btn-secondary btn-sm" id="btn-reset-pipeline" style="font-size:11px; padding:2px 6px;">Reset Demo</button>
+          <div class="widget-bottom">
+            <span style="font-size:11px; color:var(--text-muted);">Auto-saves to browser</span>
+            <button class="btn-pill" id="btn-reset-demo" style="font-size:11px; padding:3px 8px;">Reset Demo</button>
           </div>
         </div>
       </aside>
@@ -807,78 +841,80 @@
   </section>
 
   <!-- ==========================================================================
-       TAB 2: ALL LEADS DIRECTORY (LARGE LIST IN SEPARATE TAB)
+       TAB 2: SEPARATE ALL LEADS DIRECTORY (CLEAN DARK DATA TABLE)
        ========================================================================== -->
   <section class="tab-pane" id="tab-directory">
-    <div style="margin-bottom:16px;">
-      <h2 style="font-size:18px; font-weight:700;">All Leads Directory</h2>
-      <p style="font-size:13px; color:var(--ink-secondary);">Full database of 4,000+ facilities across all 10 states. Search, filter, and assign leads to the pipeline.</p>
-    </div>
-
-    <div class="filter-panel">
-      <input type="search" id="dir-search" placeholder="Search company, city, ZIP, or standard (e.g. 1910.1200)...">
-      <select id="dir-tier">
-        <option value="Hot">Hot Only (Score 8–12)</option>
-        <option value="Warm">Warm Only (Score 5–7)</option>
-        <option value="all">Hot & Warm (All)</option>
-      </select>
-      <select id="dir-state">
-        <option value="all">All States</option>
-      </select>
-      <select id="dir-industry">
-        <option value="all">All Industries</option>
-      </select>
-      <select id="dir-status">
-        <option value="ready">Outreach-Ready Only</option>
-        <option value="all">All Leads (Include Holds)</option>
-      </select>
-    </div>
-
-    <div class="dir-table-card">
-      <div class="dir-table-wrap">
-        <table class="leads-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Facility & Location</th>
-              <th>Industry</th>
-              <th style="text-align:right">Employees</th>
-              <th>Score</th>
-              <th>Primary Dust Signal</th>
-              <th>Recommended Next Step</th>
-              <th>Pipeline Stage</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="dir-tbody"></tbody>
-        </table>
+    <div class="directory-container">
+      <div style="margin-bottom:4px;">
+        <h2 style="font-size:20px; font-weight:600;">Full Facility Directory</h2>
+        <p style="font-size:13px; color:var(--text-secondary);">4,286 facilities across 10 manufacturing states. Filter and inspect records.</p>
       </div>
-      <div class="pagination-bar">
-        <div style="font-size:12px; color:var(--ink-muted);" id="dir-page-info">Page 1</div>
-        <div style="display:flex; gap:6px;">
-          <button class="btn btn-secondary btn-sm" id="btn-prev-page">‹ Prev</button>
-          <button class="btn btn-secondary btn-sm" id="btn-next-page">Next ›</button>
+
+      <div class="dir-search-bar">
+        <input type="search" id="dir-search" placeholder="Search facility name, city, ZIP, or standard code (e.g. 1910.1200)...">
+        <select id="dir-tier">
+          <option value="Hot">Hot Only (Score 8–12)</option>
+          <option value="Warm">Warm Only (Score 5–7)</option>
+          <option value="all">Hot & Warm (All)</option>
+        </select>
+        <select id="dir-state">
+          <option value="all">All States</option>
+        </select>
+        <select id="dir-industry">
+          <option value="all">All Industries</option>
+        </select>
+        <select id="dir-status">
+          <option value="ready">Outreach-Ready Only</option>
+          <option value="all">All Facilities (Include Holds)</option>
+        </select>
+      </div>
+
+      <div class="table-box">
+        <div class="table-scroll">
+          <table class="apple-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Facility & Location</th>
+                <th>Industry</th>
+                <th style="text-align:right">Employees</th>
+                <th>Score</th>
+                <th>Primary Dust Signal</th>
+                <th>Recommended Action</th>
+                <th>Pipeline</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="dir-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination-foot">
+          <div style="font-size:12px; color:var(--text-muted);" id="dir-page-info">Showing 1–50 of 4,286</div>
+          <div style="display:flex; gap:6px;">
+            <button class="btn-pill" id="btn-prev-page">‹ Prev</button>
+            <button class="btn-pill" id="btn-next-page">Next ›</button>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ==========================================================================
-       TAB 3: TERRITORY & ANALYTICS
+       TAB 3: TERRITORY MAP & MARKET INTELLIGENCE
        ========================================================================== -->
   <section class="tab-pane" id="tab-territory">
     <div style="margin-bottom:16px;">
-      <h2 style="font-size:18px; font-weight:700;">Territory Intelligence</h2>
-      <p style="font-size:13px; color:var(--ink-secondary);">Geographic concentration of dust-collection opportunities in the 10 target states.</p>
+      <h2 style="font-size:20px; font-weight:600;">Territory Intelligence</h2>
+      <p style="font-size:13px; color:var(--text-secondary);">Geographic concentration of industrial prospects across CA, TX, FL, NY, PA, IL, OH, GA, NC, MI.</p>
     </div>
-    <div class="analytics-grid">
-      <div class="analytics-card">
-        <h3>Facility Map (Click dots for details)</h3>
+    <div class="territory-grid">
+      <div class="territory-card">
+        <h3>Facility Locations (Click markers for dossier)</h3>
         <div id="map"></div>
       </div>
-      <div class="analytics-card">
+      <div class="territory-card">
         <h3>Leads by Industry</h3>
-        <div id="chart-ind" style="margin-bottom:20px;"></div>
+        <div id="chart-ind" style="margin-bottom:24px;"></div>
         <h3>Leads by State</h3>
         <div id="chart-state"></div>
       </div>
@@ -889,63 +925,62 @@
        TAB 4: METHODOLOGY
        ========================================================================== -->
   <section class="tab-pane" id="tab-methodology">
-    <div class="method-card">
-      <h3>Hocker North America ICP & Scoring Rubric</h3>
-      <p>This pipeline scores facilities 0–12 using OSHA enforcement data and EPA TRI metal air emissions to identify manufacturers needing industrial dust collection.</p>
+    <div class="method-doc">
+      <h2>Hocker North America ICP & Scoring Rubric</h2>
+      <p>This pipeline continuously ranks manufacturing facilities 0–12 using OSHA enforcement records and EPA TRI metal air emissions to pinpoint near-term dust collection demand.</p>
       
       <table class="method-table">
-        <thead><tr><th>Criterion</th><th>Points</th><th>Rules</th></tr></thead>
+        <thead><tr><th>Factor</th><th>Points</th><th>Criteria</th></tr></thead>
         <tbody>
           <tr><td><strong>Industry Fit</strong></td><td>0–3 pts</td><td>Woodworking & Fabricated Metal (3 pts); Cement & Food (2 pts); Pharma, Plastics & Foundries (1 pt).</td></tr>
-          <tr><td><strong>Dust Evidence</strong></td><td>0–3 pts</td><td>3 pts: Dust-specific citation (silica, ventilation, air limits, metal dust); 2 pts: Combustible Dust NEP inspection or housekeeping (1910.22); 1 pt: other serious violation.</td></tr>
-          <tr><td><strong>Recency</strong></td><td>0–3 pts</td><td>Within 12 months (3 pts), 24 months (2 pts), 36 months (1 pt). Impending abatement deadlines drive immediate buying intent.</td></tr>
+          <tr><td><strong>Dust Evidence</strong></td><td>0–3 pts</td><td>3 pts: Dust-specific citation (silica, industrial ventilation, air limits); 2 pts: Combustible Dust NEP or housekeeping (1910.22); 1 pt: other serious violation.</td></tr>
+          <tr><td><strong>Recency</strong></td><td>0–3 pts</td><td>Within 12 months (3 pts), 24 months (2 pts), 36 months (1 pt). Impending abatement deadlines drive equipment orders.</td></tr>
           <tr><td><strong>Site Size</strong></td><td>0–2 pts</td><td>20–500 site headcount (2 pts); 10–19 or 501–1,000 (1 pt).</td></tr>
           <tr><td><strong>EPA TRI Air Release</strong></td><td>0–1 pt</td><td>Reported fugitive or stack metal air emissions in EPA TRI 2024.</td></tr>
         </tbody>
       </table>
 
-      <h3>Compliance Holds (Archive Overrides)</h3>
+      <h3>Safety & Compliance Holds</h3>
       <p>Outreach is blocked for manual human review if a facility had a fatality in the last 36 months, a serious injury/catastrophe in the last 24 months, or an actively contested citation.</p>
     </div>
   </section>
 </main>
 
-<!-- Slide-Over Drawer -->
-<div class="drawer-backdrop" id="drawer-backdrop"></div>
-<div class="drawer-panel" id="drawer-panel">
-  <div class="drawer-head">
+<!-- Slide-Over Drawer Sheet -->
+<div class="drawer-overlay" id="drawer-overlay"></div>
+<div class="drawer-sheet" id="drawer-sheet">
+  <div class="drawer-top">
     <div>
       <h2 id="dr-title">-</h2>
-      <div class="drawer-head-meta" id="dr-meta">-</div>
+      <div class="drawer-top-sub" id="dr-meta">-</div>
     </div>
-    <button class="drawer-close" id="dr-close-btn">&times;</button>
+    <button class="drawer-close-btn" id="dr-close-btn">&times;</button>
   </div>
-  <div class="drawer-body">
-    <!-- Next Step & Target -->
+  <div class="drawer-scroll">
     <div>
-      <div class="drawer-section-title">Recommended Next Action</div>
-      <div class="lead-action-box" id="dr-action-box"></div>
+      <div class="drawer-block-title">Recommended Strategy</div>
+      <div class="action-callout" id="dr-action-callout"></div>
     </div>
 
-    <!-- Ready Outreach Email -->
     <div>
-      <div class="drawer-section-title">Ready-to-Send Outreach Draft</div>
-      <div class="email-box">
-        <div style="font-size:12px; margin-bottom:4px;"><strong>Subject:</strong> <span id="dr-email-subject">-</span></div>
-        <div class="email-pre" id="dr-email-body"></div>
-        <button class="btn btn-primary btn-sm" id="btn-copy-email">📋 Copy Email Draft</button>
+      <div class="drawer-block-title">Verified Outreach Draft</div>
+      <div class="draft-box">
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">
+          Subject: <strong style="color:var(--text-primary);" id="dr-email-subject">-</strong>
+        </div>
+        <div class="draft-pre" id="dr-email-body"></div>
+        <button class="btn-pill btn-pill-primary" id="btn-copy-email">📋 Copy Email Draft</button>
       </div>
     </div>
 
-    <!-- OSHA History -->
     <div>
-      <div class="drawer-section-title">OSHA Inspection Records</div>
-      <div id="dr-osha-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+      <div class="drawer-block-title">OSHA Inspection Records</div>
+      <div id="dr-osha-records" style="display:flex; flex-direction:column; gap:8px;"></div>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast">Notification</div>
+<div class="apple-toast" id="toast">Notification</div>
 
 <script>
 (async function () {
@@ -957,7 +992,7 @@
     const t = $("toast");
     t.textContent = msg;
     t.classList.add("show");
-    setTimeout(() => t.classList.remove("show"), 2400);
+    setTimeout(() => t.classList.remove("show"), 2200);
   }
 
   // Load Data
@@ -970,7 +1005,7 @@
   }
   const leads = rawData.leads.map((d, i) => ({ ...d, rank: i + 1 }));
 
-  // Populate Territory & Industry in Directory
+  // Populate States & Industries
   const states = rawData.territory || ["CA", "TX", "FL", "NY", "PA", "IL", "OH", "GA", "NC", "MI"];
   const industries = [...new Set(leads.map((d) => d.industry))].sort();
   for (const s of states) {
@@ -981,38 +1016,36 @@
   }
 
   // ============================================================================
-  // PIPELINE STAGES & STATE
+  // PIPELINE STATE (LocalStorage)
   // ============================================================================
   const STAGES = [
     { id: "top", label: "Top Leads Found", icon: "🎯", sub: "Priority outreach queue (~100)" },
-    { id: "reached", label: "Reached Out", icon: "📤", sub: "Initial email / message sent" },
-    { id: "contact", label: "In Contact", icon: "💬", sub: "Active discussion ongoing" },
-    { id: "audit", label: "Assessment Booked", icon: "📐", sub: "Site airflow / dust audit scheduled" },
-    { id: "hold", label: "On Hold / Review", icon: "⏸️", sub: "Safety hold or contested citation" },
+    { id: "reached", label: "Reached Out", icon: "📤", sub: "Cold touch delivered" },
+    { id: "contact", label: "In Contact", icon: "💬", sub: "Discussion in progress" },
+    { id: "audit", label: "Assessment Booked", icon: "📐", sub: "Site airflow audit scheduled" },
+    { id: "hold", label: "On Hold", icon: "⏸️", sub: "Safety hold or contest" },
   ];
 
-  const PIPELINE_KEY = "hocker_pipeline_funnel_v3";
+  const PIPELINE_KEY = "hocker_pipeline_spaceblack_v4";
   function loadPipeline() {
     const saved = localStorage.getItem(PIPELINE_KEY);
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
-    // Seed initial demo state
     const initial = {};
     const topHot = leads.filter(d => d.tier === "Hot" && d.outreach_eligible).slice(0, 100);
     topHot.forEach((d, idx) => {
-      if (idx < 14) initial[d.id] = "reached";
-      else if (idx < 19) initial[d.id] = "contact";
-      else if (idx < 21) initial[d.id] = "audit";
+      if (idx < 15) initial[d.id] = "reached";
+      else if (idx < 20) initial[d.id] = "contact";
+      else if (idx < 22) initial[d.id] = "audit";
       else initial[d.id] = "top";
     });
-    // Add held leads to hold
     leads.filter(d => !!d.hold).slice(0, 5).forEach(d => { initial[d.id] = "hold"; });
     return initial;
   }
 
   let pipeline = loadPipeline();
-  let activeStageFilter = null; // null means all top leads
+  let activeStageFilter = null;
 
   function savePipeline() {
     localStorage.setItem(PIPELINE_KEY, JSON.stringify(pipeline));
@@ -1029,7 +1062,7 @@
   function setLeadStage(id, stage) {
     pipeline[id] = stage;
     savePipeline();
-    renderActionLeads();
+    renderFeed();
     renderDirectoryTable();
   }
 
@@ -1038,8 +1071,8 @@
     if (lead.hold) {
       return {
         action: "Hold Outreach — Review Legal/Safety Record",
-        detail: `OSHA record has a ${lead.hold}. Do not contact until cleared by safety/sales leadership.`,
-        targetRole: "Internal Review Only"
+        detail: `OSHA record has a ${lead.hold}. Do not contact until cleared by safety/sales management.`,
+        targetRole: "Internal Compliance Review"
       };
     }
     const emp = lead.employees || 0;
@@ -1105,69 +1138,60 @@ Hocker North America · Ada, MI
   }
 
   // ============================================================================
-  // RENDER PIPELINE SIDE WIDGET
+  // SIDEBAR PIPELINE WIDGET
   // ============================================================================
   function renderPipelineWidget() {
-    const container = $("pipeline-funnel-list");
-    container.replaceChildren();
+    const box = $("funnel-rows-box");
+    box.replaceChildren();
 
-    // Calculate counts
-    const top100Ids = new Set(leads.filter(d => d.tier === "Hot" && d.outreach_eligible).slice(0, 100).map(d => d.id));
-    
-    // Add hold leads to hold pool
     const counts = { top: 0, reached: 0, contact: 0, audit: 0, hold: 0 };
     for (const [id, st] of Object.entries(pipeline)) {
       if (counts[st] !== undefined) counts[st]++;
     }
-
-    // Top leads found is the remaining unreached leads in the top 100 pool
     counts.top = Math.max(0, 100 - counts.reached - counts.contact - counts.audit);
 
     for (const stage of STAGES) {
-      const step = document.createElement("div");
-      step.className = `funnel-step ${activeStageFilter === stage.id ? 'active' : ''}`;
-      step.innerHTML = `
-        <div class="step-info">
-          <span class="step-name">${stage.icon} ${stage.label}</span>
-          <span class="step-sub">${stage.sub}</span>
+      const row = document.createElement("div");
+      row.className = `funnel-item ${activeStageFilter === stage.id ? 'active' : ''}`;
+      row.innerHTML = `
+        <div class="funnel-item-left">
+          <span class="funnel-name"><span>${stage.icon}</span> ${stage.label}</span>
+          <span class="funnel-desc">${stage.sub}</span>
         </div>
-        <span class="step-count tabular">${counts[stage.id]}</span>
+        <span class="funnel-num tabular">${counts[stage.id]}</span>
       `;
 
-      step.onclick = () => {
+      row.onclick = () => {
         if (activeStageFilter === stage.id) activeStageFilter = null;
         else activeStageFilter = stage.id;
         renderPipelineWidget();
-        renderActionLeads();
+        renderFeed();
       };
 
-      container.append(step);
+      box.append(row);
     }
   }
 
-  // Reset demo button
-  $("btn-reset-pipeline").onclick = () => {
+  $("btn-reset-demo").onclick = () => {
     localStorage.removeItem(PIPELINE_KEY);
     pipeline = loadPipeline();
     activeStageFilter = null;
     savePipeline();
-    renderActionLeads();
-    showToast("Pipeline reset to demo initial state");
+    renderFeed();
+    showToast("Funnel reset to initial demo state");
   };
 
   // ============================================================================
-  // TAB 1: RENDER ACTION LEADS
+  // TAB 1: COMMAND CENTER FEED
   // ============================================================================
-  let currentActionFilter = "all";
+  let currentPillFilter = "all";
 
-  function renderActionLeads() {
-    const container = $("action-leads-list");
+  function renderFeed() {
+    const container = $("lead-cards-container");
     container.replaceChildren();
 
-    // Default top 100 hot leads
     let pool = leads.filter(d => d.tier === "Hot" && d.outreach_eligible).slice(0, 100);
 
-    // If active stage filter is selected from sidebar widget
     if (activeStageFilter) {
       if (activeStageFilter === "hold") {
         pool = leads.filter(d => !!d.hold).slice(0, 50);
@@ -1176,23 +1200,22 @@ Hocker North America · Ada, MI
       }
     }
 
-    // Secondary pill filter
-    if (currentActionFilter === "nep") {
+    if (currentPillFilter === "nep") {
       pool = pool.filter(d => d.inspections.some(i => i.dust_program === "Combustible Dust NEP"));
-    } else if (currentActionFilter === "silica") {
+    } else if (currentPillFilter === "silica") {
       pool = pool.filter(d => d.inspections.some(i => i.dust_program === "Silica emphasis program" || (i.citations && i.citations.some(c => c.standard && c.standard.includes("1910.1053")))));
-    } else if (currentActionFilter === "tri") {
+    } else if (currentPillFilter === "tri") {
       pool = pool.filter(d => !!d.tri_air_signal);
-    } else if (currentActionFilter === "wood") {
+    } else if (currentPillFilter === "wood") {
       pool = pool.filter(d => d.industry.toLowerCase().includes("wood"));
-    } else if (currentActionFilter === "metal") {
+    } else if (currentPillFilter === "metal") {
       pool = pool.filter(d => d.industry.toLowerCase().includes("metal"));
     }
 
-    $("action-shown-count").textContent = pool.length;
+    $("action-count").textContent = pool.length;
 
     if (pool.length === 0) {
-      container.innerHTML = `<div style="padding:32px; text-align:center; color:var(--ink-muted); background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-md);">No leads found matching current filter. Click "All Top" above or clear the sidebar stage filter.</div>`;
+      container.innerHTML = `<div style="padding:40px; text-align:center; color:var(--text-muted); background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg);">No facilities match the selected filter. Click "All Priority" or clear the stage filter on the right.</div>`;
       return;
     }
 
@@ -1200,7 +1223,6 @@ Hocker North America · Ada, MI
       const nextStep = getNextStep(d);
       const stage = getLeadStage(d.id);
 
-      // Situation summary
       let sitText = `Cited for ${d.dust_reason} (${d.evidence_date || "recent"}).`;
       const nep = d.inspections.find(i => i.dust_program);
       if (nep) {
@@ -1213,45 +1235,50 @@ Hocker North America · Ada, MI
       const card = document.createElement("div");
       card.className = "lead-card";
       card.innerHTML = `
-        <div class="lead-head">
-          <div>
-            <div class="lead-name">${d.name}</div>
-            <div class="lead-meta">📍 ${d.city}, ${d.state} · ${d.industry} · ${d.employees ? fmt(d.employees) + ' employees' : 'Headcount unverified'}</div>
+        <div class="card-top">
+          <div class="card-title-block">
+            <h3>${d.name}</h3>
+            <div class="card-meta">
+              <span>📍 ${d.city}, ${d.state}</span>
+              <span>·</span>
+              <span>${d.industry}</span>
+              <span>·</span>
+              <span>${d.employees ? fmt(d.employees) + ' employees' : 'Headcount unverified'}</span>
+            </div>
           </div>
-          <span class="score-badge">${d.score.total}/12 HOT</span>
+          <span class="badge-score">${d.score.total}/12 HOT</span>
         </div>
 
-        <div class="lead-situation">
+        <div class="catalyst-box">
           <strong>The Situation:</strong> ${sitText}
         </div>
 
-        <div class="lead-action-box">
-          <div class="action-title">Recommended Next Action</div>
-          <div class="action-desc">${nextStep.action}</div>
-          <div class="action-role">Target Role: <strong>${nextStep.targetRole}</strong></div>
+        <div class="action-callout">
+          <div class="action-label">Recommended Action</div>
+          <div class="action-text">${nextStep.action}</div>
+          <div class="action-target">Target: <strong>${nextStep.targetRole}</strong></div>
         </div>
 
-        <div class="lead-footer">
+        <div class="card-footer">
           <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:11px; color:var(--ink-muted); font-weight:600;">Pipeline:</span>
+            <span style="font-size:11px; color:var(--text-muted); font-weight:600;">Funnel Stage:</span>
             <select class="stage-select" data-id="${d.id}">
               ${STAGES.map(s => `<option value="${s.id}" ${stage === s.id ? 'selected' : ''}>${s.icon} ${s.label}</option>`).join('')}
             </select>
           </div>
-          <div style="display:flex; align-items:center; gap:6px;">
-            <button class="btn btn-secondary btn-sm btn-dossier">OSHA Details</button>
-            <button class="btn btn-primary btn-sm btn-email">✉️ Draft Email</button>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="btn-pill btn-view-osha" style="font-size:11px; padding:4px 10px;">OSHA Details</button>
+            <button class="btn-pill btn-pill-primary btn-draft-email" style="font-size:11px; padding:4px 12px;">✉️ Draft Email</button>
           </div>
         </div>
       `;
 
-      card.querySelector(".lead-name").onclick = () => openDrawer(d);
-      card.querySelector(".btn-dossier").onclick = () => openDrawer(d);
-      card.querySelector(".btn-email").onclick = () => {
+      card.querySelector("h3").onclick = () => openDrawer(d);
+      card.querySelector(".btn-view-osha").onclick = () => openDrawer(d);
+      card.querySelector(".btn-draft-email").onclick = () => {
         openDrawer(d);
         setTimeout(() => $("dr-email-body").scrollIntoView({ behavior: "smooth", block: "center" }), 150);
       };
-
       card.querySelector(".stage-select").onchange = (e) => {
         setLeadStage(d.id, e.target.value);
         showToast(`Moved ${d.name} to ${STAGES.find(s => s.id === e.target.value).label}`);
@@ -1261,18 +1288,18 @@ Hocker North America · Ada, MI
     }
   }
 
-  // Pill filter buttons
+  // Filter chips in Command Center
   document.querySelectorAll("[data-filter]").forEach(btn => {
     btn.onclick = () => {
       document.querySelectorAll("[data-filter]").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-      currentActionFilter = btn.dataset.filter;
-      renderActionLeads();
+      currentPillFilter = btn.dataset.filter;
+      renderFeed();
     };
   });
 
   // ============================================================================
-  // TAB 2: ALL LEADS DIRECTORY
+  // TAB 2: DIRECTORY TABLE
   // ============================================================================
   let dirPage = 1;
   const dirPageSize = 50;
@@ -1323,29 +1350,29 @@ Hocker North America · Ada, MI
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td class="tabular" style="color:var(--ink-muted);">${d.rank}</td>
+        <td class="tabular" style="color:var(--text-muted);">${d.rank}</td>
         <td>
-          <div style="font-weight:600; cursor:pointer;" class="dir-name">${d.name}</div>
-          <div style="font-size:11px; color:var(--ink-muted);">${d.city}, ${d.state}</div>
+          <div style="font-weight:600; color:var(--text-primary); cursor:pointer;" class="dir-cell-name">${d.name}</div>
+          <div style="font-size:11px; color:var(--text-muted);">${d.city}, ${d.state}</div>
         </td>
         <td style="font-size:12px;">${d.industry.split(',')[0]}</td>
         <td class="tabular" style="text-align:right">${d.employees ? fmt(d.employees) : '—'}</td>
-        <td><span class="score-badge" style="background:${d.tier === 'Hot' ? 'var(--hot-bg)' : 'var(--warm-bg)'}; color:${d.tier === 'Hot' ? 'var(--hot)' : 'var(--warm)'};">${d.score.total}/12</span></td>
+        <td><span class="badge-score" style="font-size:11px; padding:2px 6px;">${d.score.total}/12</span></td>
         <td style="font-size:12px;">${d.dust_reason || 'None'}</td>
-        <td style="font-size:12px; max-width:240px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${nextStep.action}">${nextStep.action}</td>
+        <td style="font-size:12px; max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${nextStep.action}">${nextStep.action}</td>
         <td>
-          <select class="stage-select stage-dir-select" data-id="${d.id}" style="font-size:11px; padding:3px 6px;">
+          <select class="stage-select stage-dir-sel" data-id="${d.id}" style="font-size:11px; padding:2px 6px;">
             ${STAGES.map(s => `<option value="${s.id}" ${stage === s.id ? 'selected' : ''}>${s.icon} ${s.label.split(' ')[0]}</option>`).join('')}
           </select>
         </td>
         <td>
-          <button class="btn btn-secondary btn-sm btn-dir-view" style="padding:2px 8px; font-size:11px;">View</button>
+          <button class="btn-pill btn-dir-view" style="font-size:11px; padding:2px 8px;">View</button>
         </td>
       `;
 
-      tr.querySelector(".dir-name").onclick = () => openDrawer(d);
+      tr.querySelector(".dir-cell-name").onclick = () => openDrawer(d);
       tr.querySelector(".btn-dir-view").onclick = () => openDrawer(d);
-      tr.querySelector(".stage-dir-select").onchange = (e) => {
+      tr.querySelector(".stage-dir-sel").onchange = (e) => {
         setLeadStage(d.id, e.target.value);
       };
 
@@ -1361,7 +1388,7 @@ Hocker North America · Ada, MI
   $("btn-next-page").onclick = () => { dirPage++; renderDirectoryTable(); };
 
   // ============================================================================
-  // TAB 3: TERRITORY MAP
+  // TAB 3: TERRITORY MAP (SPACE BLACK THEME)
   // ============================================================================
   let mapRendered = false;
   function renderTerritory() {
@@ -1376,14 +1403,21 @@ Hocker North America · Ada, MI
         customdata: p.map((d) => d.id),
         text: p.map((d) => `<b>${d.name}</b><br>${d.city}, ${d.state}<br>Score: ${d.score.total}/12`),
         hovertemplate: "%{text}<extra></extra>",
-        marker: { size, color, opacity: 0.8 },
+        marker: { size, color, opacity: 0.85, line: { width: 1, color: "#101318" } },
       };
     };
     const layout = {
-      margin: { l: 0, r: 0, t: 0, b: 0 }, paper_bgcolor: "rgba(0,0,0,0)", showlegend: false,
-      geo: { projection: { type: "albers usa" }, scope: "usa", showland: true, landcolor: "#f1f5f9", subunitcolor: "#cbd5e1" }
+      margin: { l: 0, r: 0, t: 0, b: 0 },
+      paper_bgcolor: "rgba(0,0,0,0)",
+      showlegend: false,
+      hoverlabel: { bgcolor: "#181d26", bordercolor: "rgba(255,255,255,0.2)", font: { color: "#f5f5f7" } },
+      geo: {
+        projection: { type: "albers usa" }, scope: "usa",
+        showland: true, landcolor: "#161a22", showlakes: true, lakecolor: "#0a0c10",
+        subunitcolor: "rgba(255,255,255,0.12)", countrycolor: "rgba(255,255,255,0.12)", bgcolor: "rgba(0,0,0,0)"
+      }
     };
-    Plotly.react("map", [trace("Warm", "#0284c7", 5), trace("Hot", "#ea580c", 7)], layout, { displayModeBar: false, responsive: true });
+    Plotly.react("map", [trace("Warm", "#38bdf8", 5), trace("Hot", "#f97316", 7)], layout, { displayModeBar: false, responsive: true });
     $("map").on("plotly_click", (ev) => {
       const id = ev.points[0].customdata;
       const d = leads.find((x) => x.id === id);
@@ -1404,20 +1438,20 @@ Hocker North America · Ada, MI
     box.replaceChildren();
     for (const [name, count] of rows) {
       const row = document.createElement("div");
-      row.style.cssText = "display:grid; grid-template-columns:140px 1fr 40px; gap:8px; align-items:center; margin-bottom:6px; font-size:12px;";
+      row.style.cssText = "display:grid; grid-template-columns:140px 1fr 40px; gap:8px; align-items:center; margin-bottom:8px; font-size:12px;";
       row.innerHTML = `
-        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--ink-secondary);">${name}</span>
-        <div style="background:var(--bg-subtle); height:10px; border-radius:4px; overflow:hidden;">
+        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-secondary);">${name}</span>
+        <div style="background:rgba(255,255,255,0.06); height:8px; border-radius:4px; overflow:hidden;">
           <div style="background:var(--brand); height:100%; width:${(100*count/maxVal).toFixed(1)}%;"></div>
         </div>
-        <span class="tabular" style="text-align:right; font-weight:600;">${fmt(count)}</span>
+        <span class="tabular" style="text-align:right; font-weight:600; color:var(--text-primary);">${fmt(count)}</span>
       `;
       box.append(row);
     }
   }
 
   // ============================================================================
-  // DRAWER (DOSSIER & EMAIL)
+  // APPLE SLIDE-OVER SHEET (DRAWER)
   // ============================================================================
   function openDrawer(d) {
     const nextStep = getNextStep(d);
@@ -1426,11 +1460,11 @@ Hocker North America · Ada, MI
     $("dr-title").textContent = d.name;
     $("dr-meta").textContent = `${d.city}, ${d.state} ${d.zip || ''} · ${d.industry} · ${d.employees ? fmt(d.employees) + ' site employees' : 'Headcount unverified'}`;
 
-    $("dr-action-box").innerHTML = `
-      <div class="action-title">Recommended Next Action</div>
-      <div class="action-desc">${nextStep.action}</div>
-      <div style="font-size:12px; color:var(--ink-secondary); margin-top:4px;">${nextStep.detail}</div>
-      <div style="font-size:11px; color:var(--ink-muted); margin-top:4px;">Target Role: <strong>${nextStep.targetRole}</strong></div>
+    $("dr-action-callout").innerHTML = `
+      <div class="action-label">Recommended Action</div>
+      <div class="action-text">${nextStep.action}</div>
+      <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">${nextStep.detail}</div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Target: <strong>${nextStep.targetRole}</strong></div>
     `;
 
     $("dr-email-subject").textContent = draft.subject;
@@ -1441,15 +1475,15 @@ Hocker North America · Ada, MI
       showToast("Email draft copied to clipboard!");
     };
 
-    const oshaBox = $("dr-osha-list");
+    const oshaBox = $("dr-osha-records");
     oshaBox.replaceChildren();
 
     if (!d.inspections || d.inspections.length === 0) {
-      oshaBox.innerHTML = `<div style="font-size:12px; color:var(--ink-muted);">No specific inspections recorded in window.</div>`;
+      oshaBox.innerHTML = `<div style="font-size:12px; color:var(--text-muted);">No specific inspections recorded in window.</div>`;
     } else {
       for (const insp of d.inspections) {
         const item = document.createElement("div");
-        item.style.cssText = "background:var(--bg-subtle); padding:10px 12px; border-radius:var(--radius-sm); font-size:12px;";
+        item.style.cssText = "background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:10px 12px; border-radius:var(--radius-sm); font-size:12px;";
         let citHtml = "";
         if (insp.citations && insp.citations.length > 0) {
           citHtml = `<ul style="margin:6px 0 0 16px;">` + insp.citations.map(c => `
@@ -1459,7 +1493,7 @@ Hocker North America · Ada, MI
         item.innerHTML = `
           <div>
             <strong><a href="${insp.url}" target="_blank" rel="noopener">OSHA Inspection #${insp.inspection_id}</a></strong>
-            <span style="color:var(--ink-muted);">· opened ${insp.opened}</span>
+            <span style="color:var(--text-muted);">· opened ${insp.opened}</span>
             ${insp.dust_program ? `<span style="background:var(--hot-bg); color:var(--hot); padding:1px 6px; border-radius:4px; font-weight:600; margin-left:4px;">${insp.dust_program}</span>` : ''}
           </div>
           ${citHtml}
@@ -1468,23 +1502,23 @@ Hocker North America · Ada, MI
       }
     }
 
-    $("drawer-backdrop").classList.add("open");
-    $("drawer-panel").classList.add("open");
+    $("drawer-overlay").classList.add("open");
+    $("drawer-sheet").classList.add("open");
   }
 
   function closeDrawer() {
-    $("drawer-backdrop").classList.remove("open");
-    $("drawer-panel").classList.remove("open");
+    $("drawer-overlay").classList.remove("open");
+    $("drawer-sheet").classList.remove("open");
   }
 
   $("dr-close-btn").onclick = closeDrawer;
-  $("drawer-backdrop").onclick = closeDrawer;
+  $("drawer-overlay").onclick = closeDrawer;
   window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });
 
   // Tab switching
-  document.querySelectorAll(".tab-btn").forEach(btn => {
+  document.querySelectorAll(".seg-btn").forEach(btn => {
     btn.onclick = () => {
-      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".seg-btn").forEach(b => b.classList.remove("active"));
       document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
       btn.classList.add("active");
       $($(btn.dataset.tab)).classList.add("active");
@@ -1503,28 +1537,14 @@ Hocker North America · Ada, MI
     const csvContent = "data:text/csv;charset=utf-8," + rows.map(r => r.join(",")).join("\n");
     const link = document.createElement("a");
     link.href = encodeURI(csvContent);
-    link.download = `hocker_top_leads_${new Date().toISOString().slice(0,10)}.csv`;
+    link.download = `hocker_leads_${new Date().toISOString().slice(0,10)}.csv`;
     link.click();
     showToast("Exported Top 100 Leads to CSV");
   };
 
-  // Dark/Light Theme
-  const themeBtn = $("theme-toggle");
-  function setTheme(theme) {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("hocker_theme", theme);
-    themeBtn.textContent = theme === "dark" ? "☀️" : "🌙";
-  }
-  const savedTheme = localStorage.getItem("hocker_theme") || "light";
-  setTheme(savedTheme);
-  themeBtn.onclick = () => {
-    const cur = document.documentElement.getAttribute("data-theme");
-    setTheme(cur === "dark" ? "light" : "dark");
-  };
-
   // Initial renders
   renderPipelineWidget();
-  renderActionLeads();
+  renderFeed();
   applyDirectoryFilters();
 })();
 </script>
