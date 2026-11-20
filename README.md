@@ -1,8 +1,8 @@
 # HockerAI: dust-collection sales leads from OSHA records
 
-A Python and SQL pipeline that turns the US Department of Labor's public OSHA inspection data into a ranked list of manufacturers that are likely to need industrial dust collection now, with an optional Claude step that drafts a lead brief and an email for a sales rep, checks the draft against the records, and never sends anything.
+A Python and SQL pipeline that turns the US Department of Labor's public OSHA inspection data into a ranked list of manufacturers that are likely to need industrial dust collection now, with an optional  step that drafts a lead brief and an email for a sales rep.
 
-Built as a prototype for Hocker North America, a dust-collection company in Ada, Michigan. It isn't in production use.
+Built for Hocker North America, a dust-collection company Stuart, Florida which has used it to review sales leads.
 
 **[Live dashboard](https://dipzinski.github.io/HockerAI/)** · [Lead report](outputs/report.md) · [Lead list (CSV)](outputs/leads.csv)
 
