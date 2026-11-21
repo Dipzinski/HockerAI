@@ -35,7 +35,10 @@ facts, leave it out.
 - The email goes to the role in suggested_contact_role, with no personal name. Under 150 words, \
 plain and specific, at most one reference to the public OSHA record, no dollar amounts, no fear \
 tactics. End with the two lines "[Rep name]" and "Hocker North America".
-- In why_now, explain in 2-3 sentences why this facility is worth a call this month."""
+- In why_now, use 2-3 sentences to state documented facts that may warrant research and clearly label \
+any research hypothesis. Do not imply a process, equipment need or upgrade, buying intent, urgency, \
+or purchasing plan unless the supplied records explicitly establish it. Do not claim that a call is \
+timely "this month" or that a citation creates a current buying deadline."""
 
 
 class TalkingPoint(BaseModel):
@@ -85,12 +88,11 @@ def facts_for(lead: dict, as_of: str) -> dict:
             "industry": lead["industry"], "naics": lead["naics"],
             "employees_at_site": lead["employees"],
         },
-        "lead_score": {**lead["score"], "tier": lead["tier"], "out_of": 11,
-                       "window_months": config.EVIDENCE_WINDOW_MONTHS},
         "inspections": [
             {
                 "inspection_id": i["inspection_id"], "opened": i["opened"],
                 "dust_program": i["dust_program"],
+                "citation_count": len(i["citations"]),
                 "citations": [{k: c[k] for k in ("standard", "title", "category", "type", "issued",
                                                  "penalty_usd")} for c in i["citations"]],
                 "other_citations": i["other_citations"],

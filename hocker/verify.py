@@ -1,6 +1,9 @@
 """Check a Claude-written brief against the facility's records before a person sees it.
 
-The model is told to use only the facts it was given; this module checks that it did.
+The model is told to use only the facts it was given. This module checks format,
+source IDs, numbers, counts, and prohibited topics; it does not semantically verify
+that a factual-sounding process, upgrade, intent, or timing claim is supported.
+A passing result is not a fact-check or approval to send.
 A draft fails if it
   - cites an inspection ID that isn't in the facility's records,
   - has a talking point with no inspection ID,

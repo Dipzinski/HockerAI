@@ -6,10 +6,9 @@ FACTS = {
     "as_of": "2026-09-23",
     "facility": {"name": "Great Lakes Millwork", "city": "Grand Rapids", "state": "MI",
                  "industry": "Woodworking, cabinets & furniture", "naics": "337110", "employees_at_site": 60},
-    "lead_score": {"industry": 3, "dust": 3, "recency": 3, "size": 2, "total": 11, "tier": "Hot",
-                   "out_of": 11, "window_months": 36},
     "inspections": [
         {"inspection_id": "1745001", "opened": "2026-03-04", "dust_program": "Combustible Dust NEP",
+         "citation_count": 2,
          "citations": [
              {"standard": "29 CFR 1910.94(a)(1)", "title": "Ventilation", "category": "dust",
               "type": "Serious", "issued": "2026-05-01", "penalty_usd": 8275},
@@ -21,8 +20,10 @@ FACTS = {
 }
 
 GOOD = {
-    "why_now": "Great Lakes Millwork was cited under 29 CFR 1910.94 in May 2026 after a Combustible "
-               "Dust NEP inspection, so ventilation upgrades are likely on the plant's list now.",
+    "why_now": "The public record documents that Great Lakes Millwork was cited for ventilation during "
+               "a May 2026 Combustible Dust NEP inspection. This is a research hypothesis for a "
+               "representative to verify; it is not evidence that the site needs an upgrade or intends "
+               "to buy equipment.",
     "talking_points": [
         {"point": "Cited for ventilation (1910.94) with an $8,275 penalty on 2026-05-01.",
          "inspection_ids": ["1745001"]},
@@ -47,6 +48,19 @@ def draft(**changes):
 def test_faithful_draft_passes():
     result = verify.check(GOOD, FACTS)
     assert result.passed, result.issues
+
+
+def test_verifier_does_not_semantically_certify_unsupported_claims():
+    # These claims are deliberately adversarial: the mechanical checker does not
+    # know the plant's processes, plans, intent, or purchase timing.
+    for claim in (
+        "The plant sands hardwood.",
+        "The plant plans ventilation upgrades.",
+        "The plant intends to buy a collector.",
+        "The plant needs to act this month.",
+    ):
+        result = verify.check(draft(why_now=claim), FACTS)
+        assert result.passed
 
 
 def test_made_up_penalty_is_caught():

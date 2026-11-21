@@ -8,7 +8,6 @@ from tests.test_verify import FACTS, GOOD
 LEAD = {
     "id": "f123", "name": FACTS["facility"]["name"], "city": "Grand Rapids", "state": "MI",
     "industry": FACTS["facility"]["industry"], "naics": "337110", "employees": 60,
-    "score": {k: FACTS["lead_score"][k] for k in ("industry", "dust", "recency", "size", "total")},
     "tier": "Hot",
     "inspections": [{**i, "url": "x", "citations": [{**c, "under_contest": False} for c in i["citations"]]}
                     for i in FACTS["inspections"]],
@@ -30,6 +29,13 @@ class FakeClient:
 
 def test_facts_match_the_verifier_fixture():
     assert briefs.facts_for(LEAD, "2026-09-23") == FACTS
+
+
+def test_prompt_requires_documented_why_now_and_rejects_unsupported_purchase_claims():
+    prompt = briefs.SYSTEM_PROMPT.lower()
+    assert "clearly label" in prompt
+    assert "buying intent" in prompt
+    assert "do not claim" in prompt and "this month" in prompt
 
 
 def test_good_draft_passes_first_try():
