@@ -22,8 +22,8 @@ ZCTA_URL = "https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2024_Gazet
 TRI_DATA_YEAR = 2024
 TRI_URL = "https://data.epa.gov/efservice/downloads/tri/mv_tri_basic_download/{year}_{state}/csv"
 
-# Hocker North America is in Ada, MI; the territory is the surrounding Great Lakes states.
-TERRITORY = ("MI", "OH", "IN", "IL", "WI")
+# Ten most populous states, ordered by the Census Bureau's Vintage 2025 estimates.
+TERRITORY = ("CA", "TX", "FL", "NY", "PA", "IL", "OH", "GA", "NC", "MI")
 
 # Inspections opened on or after this date are loaded.
 LOAD_START = "2019-01-01"
