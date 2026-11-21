@@ -44,6 +44,7 @@ def public_hold(reason: str | None) -> str | None:
 def _leads(con: duckdb.DuckDBPyConnection) -> list[dict]:
     rel = con.sql("""
         SELECT s.*, f.name, f.address, f.city, f.state, f.zip5, f.naics, f.employees,
+               f.facility_match_review_required,
                f.n_inspections, f.n_inspections_window, f.last_inspection, z.lat, z.lon,
                t.release_lbs AS tri_air_release_lbs, t.chemicals AS tri_air_chemicals,
                t.forms AS tri_air_forms
@@ -99,6 +100,7 @@ def _lead_record(r: dict, inspections: list[dict]) -> dict:
             "reporting_year": config.TRI_DATA_YEAR,
         } if r["tri_air_release_lbs"] is not None else None),
         "tier": r["tier"], "confidence": r["confidence"], "hold": public_hold(r["hold_reason"]),
+        "facility_match_review_required": r["facility_match_review_required"],
         "outreach_eligible": r["outreach_eligible"], "dust_reason": r["dust_reason"],
         "evidence_date": str(r["evidence_date"]) if r["evidence_date"] else None,
         "inspections_since_2019": r["n_inspections"], "inspections": inspections,
@@ -109,10 +111,10 @@ def _write_csv(leads: list[dict]) -> None:
     fields = ["rank", "facility_id", "name", "city", "state", "zip5", "industry", "naics", "employees",
               "industry_pts", "dust_pts", "recency_pts", "size_pts", "tri_air_pts",
               "tri_air_release_lbs", "tri_air_chemicals", "total", "tier", "confidence",
-              "hold_reason", "outreach_eligible", "evidence_date", "dust_reason",
+              "hold_reason", "facility_match_review_required", "outreach_eligible", "evidence_date", "dust_reason",
               "n_inspections", "last_inspection"]
     with open(config.OUTPUT_DIR / "leads.csv", "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
+        w = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore", lineterminator="\n")
         w.writeheader()
         for i, r in enumerate(leads, 1):
             w.writerow({**r, "rank": i, "name": pretty_name(r["name"]), "city": (r["city"] or "").title()})
