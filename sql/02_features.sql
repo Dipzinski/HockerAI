@@ -103,9 +103,11 @@ WITH fatal AS (
        OR (fi.insp_type = 'A' AND fi.open_date >= (SELECT injury_start FROM run_params))
     GROUP BY 1
 ), contested AS (
-    SELECT facility_id, max(contest_date) AS d
-    FROM evidence
-    WHERE kind = 'citation' AND contest_date IS NOT NULL AND final_order_date IS NULL
+    -- Holds use all loaded citation records, independent of the scoring evidence window.
+    SELECT fi.facility_id, max(v.contest_date) AS d
+    FROM violations v
+    JOIN facility_inspections fi USING (activity_nr)
+    WHERE v.contest_date IS NOT NULL AND v.final_order_date IS NULL
     GROUP BY 1
 )
 SELECT
