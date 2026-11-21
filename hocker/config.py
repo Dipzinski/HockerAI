@@ -52,6 +52,9 @@ SIZE_EDGE = (10, 1000)
 # Holds: v1's "Archive overrides score" rule, using what OSHA data can show.
 HOLD_INJURY_MONTHS = 24
 
+# Lead scoring version and rollout metadata.
+SCORE_VERSION = "rubric-v1"
+
 # Claude settings for the brief-writing step.
 BRIEF_MODEL = "claude-opus-5-5"
 BRIEF_EFFORT = "medium"

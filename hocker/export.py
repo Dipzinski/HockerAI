@@ -10,6 +10,7 @@ import duckdb
 
 from . import config
 from .facilities import strip_record_prefix
+from .lead_eval import _utc_now, snapshot_score_run
 
 OSHA_LINK = "https://www.osha.gov/ords/imis/establishment.inspection_detail?id={}.015"
 VIOL_TYPES = {"S": "Serious", "W": "Willful", "R": "Repeat", "O": "Other-than-serious", "U": "Unclassified"}
@@ -120,16 +121,51 @@ def _write_csv(leads: list[dict]) -> None:
             w.writerow({**r, "rank": i, "name": pretty_name(r["name"]), "city": (r["city"] or "").title()})
 
 
-def _delta(hot_ids: list[str], as_of: date) -> list[str]:
-    """Hot leads that weren't Hot in the previous run (v1's "daily scan", done with a state file)."""
+def _delta(hot_ids: list[str], as_of: date, ranked: list[dict] | None = None) -> list[str]:
+    """Hot leads that weren't Hot in the previous run (v1's "daily scan", done with a state file).
+
+    The state file is now kept as a versioned score snapshot so the project can
+    reconstruct the ranking and compare later outcomes against the score as it was
+    known at the time.
+    """
     state_path = config.OUTPUT_DIR / "state.json"
     previous = json.loads(state_path.read_text()) if state_path.exists() else None
-    new = [i for i in hot_ids if previous is None or i not in set(previous["hot_ids"])]
+    scored_at = _utc_now()
+    new = [i for i in hot_ids if previous is None or i not in set(previous.get("hot_ids", []))]
+    history = (previous or {}).get("history", [])
+    entry = {
+        "as_of": str(as_of),
+        "score_version": config.SCORE_VERSION,
+        "hot_ids": hot_ids,
+        "new_hot_ids": new,
+        "scored_at": scored_at,
+    }
+    history.insert(0, entry)
     state_path.write_text(json.dumps({
         "as_of": str(as_of),
         "previous_as_of": previous["as_of"] if previous else None,
+        "score_version": config.SCORE_VERSION,
         "hot_ids": hot_ids,
+        "new_hot_ids": new,
+        "history": history[:12],
     }, indent=1))
+    if ranked is not None:
+        snapshot_path = config.OUTPUT_DIR / "score_snapshots.json"
+        previous_snapshots = json.loads(snapshot_path.read_text()) if snapshot_path.exists() else {"history": []}
+        entry = {
+            "score_version": config.SCORE_VERSION,
+            "as_of": str(as_of),
+            "scored_at": scored_at,
+            "leads": snapshot_score_run(
+                ranked, as_of=str(as_of), score_version=config.SCORE_VERSION, scored_at=scored_at,
+            ),
+        }
+        history = previous_snapshots.get("history", [])
+        history.insert(0, entry)
+        previous_snapshots["history"] = history
+        previous_snapshots["score_version"] = config.SCORE_VERSION
+        previous_snapshots["as_of"] = str(as_of)
+        snapshot_path.write_text(json.dumps(previous_snapshots, indent=1, default=str))
     return new if previous else []
 
 
@@ -207,7 +243,7 @@ def run(con: duckdb.DuckDBPyConnection, as_of: date, load_counts: dict, checks,
         "held_all": sum(r["hold_reason"] is not None for r in leads),
         "previous_run": (config.OUTPUT_DIR / "state.json").exists(),
     }
-    new_hot = _delta([r["facility_id"] for r in hot], as_of)
+    new_hot = _delta([r["facility_id"] for r in hot], as_of, leads)
     counts["new_hot_since_last_run"] = len(new_hot)
 
     _write_csv(leads)
