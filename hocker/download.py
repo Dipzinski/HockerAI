@@ -54,8 +54,24 @@ def fetch(url: str, dest: Path) -> bool:
     return True
 
 
+def fetch_tri() -> dict[str, str]:
+    """Fetch cached, year-versioned EPA TRI files for the configured states."""
+    config.RAW_DIR.mkdir(parents=True, exist_ok=True)
+    versions = {}
+    for state in config.TERRITORY:
+        dest = config.RAW_DIR / f"TRI_{config.TRI_DATA_YEAR}_{state}.csv"
+        if dest.exists():
+            print(f"  {dest.name}: cached (versioned EPA TRI release)")
+        else:
+            url = config.TRI_URL.format(year=config.TRI_DATA_YEAR, state=state)
+            print(f"  {dest.name}: downloading EPA TRI reporting year {config.TRI_DATA_YEAR}")
+            _download(url, dest)
+        versions[f"tri_{state}"] = str(config.TRI_DATA_YEAR)
+    return versions
+
+
 def run() -> dict[str, str]:
-    """Fetch every table. Returns {table: Last-Modified} for the run log."""
+    """Fetch all sources. Values are source versions or Last-Modified timestamps."""
     config.RAW_DIR.mkdir(parents=True, exist_ok=True)
     stamps = {}
     for table in config.DOL_TABLES:
@@ -63,4 +79,5 @@ def run() -> dict[str, str]:
         fetch(config.DOL_URL.format(table=table), dest)
         stamps[table] = json.loads(dest.with_suffix(".meta.json").read_text())["last_modified"]
     fetch(config.ZCTA_URL, config.RAW_DIR / "zcta_gazetteer.zip")
+    stamps.update(fetch_tri())
     return stamps

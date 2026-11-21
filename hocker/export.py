@@ -44,9 +44,12 @@ def public_hold(reason: str | None) -> str | None:
 def _leads(con: duckdb.DuckDBPyConnection) -> list[dict]:
     rel = con.sql("""
         SELECT s.*, f.name, f.address, f.city, f.state, f.zip5, f.naics, f.employees,
-               f.n_inspections, f.n_inspections_window, f.last_inspection, z.lat, z.lon
+               f.n_inspections, f.n_inspections_window, f.last_inspection, z.lat, z.lon,
+               t.release_lbs AS tri_air_release_lbs, t.chemicals AS tri_air_chemicals,
+               t.forms AS tri_air_forms
         FROM scores s JOIN facilities f USING (facility_id)
         LEFT JOIN zip_centroids z ON z.zip5 = f.zip5
+        LEFT JOIN tri_air_signals t USING (facility_id)
         ORDER BY s.total DESC, s.evidence_date DESC NULLS LAST, f.employees DESC NULLS LAST, f.name
     """)
     return [dict(zip(rel.columns, r)) for r in rel.fetchall()]
@@ -88,7 +91,13 @@ def _lead_record(r: dict, inspections: list[dict]) -> dict:
         "state": r["state"], "zip": r["zip5"], "lat": r["lat"], "lon": r["lon"],
         "industry": r["industry"], "naics": r["naics"], "employees": r["employees"],
         "score": {"industry": r["industry_pts"], "dust": r["dust_pts"], "recency": r["recency_pts"],
-                  "size": r["size_pts"], "total": r["total"]},
+                  "size": r["size_pts"], "tri_air": r["tri_air_pts"], "total": r["total"]},
+        "tri_air_signal": ({
+            "release_lbs": r["tri_air_release_lbs"],
+            "chemicals": r["tri_air_chemicals"].split("; "),
+            "forms": r["tri_air_forms"],
+            "reporting_year": config.TRI_DATA_YEAR,
+        } if r["tri_air_release_lbs"] is not None else None),
         "tier": r["tier"], "confidence": r["confidence"], "hold": public_hold(r["hold_reason"]),
         "outreach_eligible": r["outreach_eligible"], "dust_reason": r["dust_reason"],
         "evidence_date": str(r["evidence_date"]) if r["evidence_date"] else None,
@@ -98,7 +107,8 @@ def _lead_record(r: dict, inspections: list[dict]) -> dict:
 
 def _write_csv(leads: list[dict]) -> None:
     fields = ["rank", "facility_id", "name", "city", "state", "zip5", "industry", "naics", "employees",
-              "industry_pts", "dust_pts", "recency_pts", "size_pts", "total", "tier", "confidence",
+              "industry_pts", "dust_pts", "recency_pts", "size_pts", "tri_air_pts",
+              "tri_air_release_lbs", "tri_air_chemicals", "total", "tier", "confidence",
               "hold_reason", "outreach_eligible", "evidence_date", "dust_reason",
               "n_inspections", "last_inspection"]
     with open(config.OUTPUT_DIR / "leads.csv", "w", newline="") as f:
@@ -122,12 +132,13 @@ def _delta(hot_ids: list[str], as_of: date) -> list[str]:
 
 
 def _report(leads: list[dict], records: dict[str, dict], counts: dict, as_of: date,
-            new_hot: list[str], checks) -> str:
+            new_hot: list[str], checks, tri_matches: dict) -> str:
     hot = [r for r in leads if r["tier"] == "Hot"]
     lines = [
         f"# Lead report: {as_of}",
         "",
-        f"Source: OSHA enforcement data (US Department of Labor), inspections opened {config.LOAD_START} "
+        f"Sources: OSHA enforcement data (US Department of Labor) and EPA TRI reporting year "
+        f"{config.TRI_DATA_YEAR}; inspections opened {config.LOAD_START} "
         f"to {as_of} at privately owned facilities in {', '.join(config.TERRITORY)} in the 7 target industries. "
         f"Scores use the last {config.EVIDENCE_WINDOW_MONTHS} months.",
         "",
@@ -139,6 +150,10 @@ def _report(leads: list[dict], records: dict[str, dict], counts: dict, as_of: da
         f"(held for human review: {counts['held_hot']:,}; low confidence: {counts['low_conf_hot']:,})",
         f"- New Hot leads since the last run: {len(new_hot) if counts.get('previous_run') else 'n/a (first run)'}",
         f"- Data-quality checks passed: {sum(c.passed for c in checks)}/{len(checks)}",
+        f"- EPA TRI {config.TRI_DATA_YEAR} positive metal air-release signals: "
+        f"{tri_matches['facilities_with_signal']:,} facilities with an exact name/ZIP/state match "
+        f"({tri_matches['matched_forms']:,} reported forms matched; "
+        f"{tri_matches['unmatched_forms']:,} unmatched; {tri_matches['ambiguous_forms']:,} ambiguous)",
         "",
         "## Top 25 Hot leads (outreach-eligible)",
         "",
@@ -149,7 +164,7 @@ def _report(leads: list[dict], records: dict[str, dict], counts: dict, as_of: da
     for i, r in enumerate(eligible[:25], 1):
         rec = records[r["facility_id"]]
         lines.append(f"| {i} | {rec['name']} | {rec['city']}, {r['state']} | {r['industry']} | "
-                     f"{r['employees'] or 'n/a'} | {r['total']}/11 | {r['evidence_date']} |")
+                     f"{r['employees'] or 'n/a'} | {r['total']}/12 | {r['evidence_date']} |")
     lines += ["", "## Hot leads by state", "", "| State | Hot | Eligible |", "|---|---|---|"]
     by_state = Counter(r["state"] for r in hot)
     by_state_ok = Counter(r["state"] for r in eligible)
@@ -165,7 +180,8 @@ def _report(leads: list[dict], records: dict[str, dict], counts: dict, as_of: da
     return "\n".join(lines) + "\n"
 
 
-def run(con: duckdb.DuckDBPyConnection, as_of: date, load_counts: dict, checks) -> dict:
+def run(con: duckdb.DuckDBPyConnection, as_of: date, load_counts: dict, checks,
+        tri_matches: dict) -> dict:
     config.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     config.DOCS_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -193,23 +209,26 @@ def run(con: duckdb.DuckDBPyConnection, as_of: date, load_counts: dict, checks) 
     counts["new_hot_since_last_run"] = len(new_hot)
 
     _write_csv(leads)
-    (config.OUTPUT_DIR / "report.md").write_text(_report(leads, records, counts, as_of, new_hot, checks))
+    (config.OUTPUT_DIR / "report.md").write_text(
+        _report(leads, records, counts, as_of, new_hot, checks, tri_matches))
     if counts["previous_run"]:
         body = [f"# New Hot leads as of {as_of}", ""]
         body += [f"- {records[i]['name']}, {records[i]['city']}, {records[i]['state']} "
-                 f"({records[i]['score']['total']}/11)" for i in new_hot] or ["- None since the last run."]
+                 f"({records[i]['score']['total']}/12)" for i in new_hot] or ["- None since the last run."]
         (config.OUTPUT_DIR / "new_hot_leads.md").write_text("\n".join(body) + "\n")
 
     dashboard = {
         "as_of": str(as_of),
         "territory": list(config.TERRITORY),
         "window_months": config.EVIDENCE_WINDOW_MONTHS,
+        "tri_reporting_year": config.TRI_DATA_YEAR,
         "counts": counts,
         "leads": [records[r["facility_id"]] for r in leads if r["facility_id"] in shown],
     }
     (config.DOCS_DATA_DIR / "leads.json").write_text(json.dumps(dashboard, separators=(",", ":")))
 
     summary = {"as_of": str(as_of), "load": load_counts, "counts": counts,
+               "tri_matches": tri_matches,
                "checks": [c.__dict__ for c in checks]}
     (config.OUTPUT_DIR / "run_log.json").write_text(json.dumps(summary, indent=1, default=str))
     return summary

@@ -16,6 +16,21 @@ def test_recent_dust_citation_at_mid_size_woodshop_is_hot_and_eligible():
     assert s.total == 11 and s.tier == "Hot" and s.outreach_eligible
 
 
+def test_tri_metal_air_release_adds_one_point_without_replacing_osha_evidence():
+    ev = [cite("dust", date(2026, 5, 1))]
+    without_tri = rubric.score("337110", 60, False, ev, AS_OF)
+    with_tri = rubric.score("337110", 60, False, ev, AS_OF, tri_air_release_lbs=2.5)
+    assert without_tri.total == 11
+    assert with_tri.tri_air == 1 and with_tri.total == 12
+    assert with_tri.tier == "Hot" and with_tri.outreach_eligible
+
+
+def test_tri_signal_alone_cannot_create_a_hot_lead():
+    s = rubric.score("337110", 60, False, [], AS_OF, tri_air_release_lbs=2.5)
+    assert s.tri_air == 1 and s.total == 6
+    assert s.tier == "Archive" and not s.outreach_eligible
+
+
 def test_recency_bands():
     assert rubric.recency_points(date(2025, 9, 23), AS_OF) == 3   # 12 months
     assert rubric.recency_points(date(2025, 9, 22), AS_OF) == 2   # just over 12

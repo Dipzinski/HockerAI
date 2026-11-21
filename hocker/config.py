@@ -18,6 +18,10 @@ DOL_TABLES = ("inspection", "violation", "emphasis_codes", "accident", "accident
 # Census ZIP Code Tabulation Area centroids, used only to place facilities on the map.
 ZCTA_URL = "https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2024_Gazetteer/2024_Gaz_zcta_national.zip"
 
+# EPA's latest available TRI Basic Data release (reporting year 2024).
+TRI_DATA_YEAR = 2024
+TRI_URL = "https://data.epa.gov/efservice/downloads/tri/mv_tri_basic_download/{year}_{state}/csv"
+
 # Hocker North America is in Ada, MI; the territory is the surrounding Great Lakes states.
 TERRITORY = ("MI", "OH", "IN", "IL", "WI")
 

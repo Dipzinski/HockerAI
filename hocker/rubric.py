@@ -1,4 +1,4 @@
-"""The 0-11 lead-scoring rubric, carried over from v1 and computed from OSHA records.
+"""The 0-12 lead-scoring rubric, computed from OSHA records and EPA TRI.
 
 | Criterion      | Points | Source                                                   |
 |----------------|--------|----------------------------------------------------------|
@@ -6,14 +6,17 @@
 | Dust evidence  | 0-3    | Citations and dust-program inspections, last 36 months  |
 | Recency        | 0-3    | Months since the dust evidence (dust evidence only)      |
 | Site size      | 0-2    | Employees at the inspected site                          |
+| TRI air        | 0-1    | Positive TRI metal air release, exact facility match     |
 
-Hot 8-11, Warm 5-7, Archive 0-4. A facility with no citation or dust-program
-inspection in the window is Archive whatever its total: industry and size alone
-say nothing about why to call now. v1 used a "growth/hiring signal" as the third
+Hot 8-12, Warm 5-7, Archive 0-4. TRI alone cannot make a lead Hot: the added
+point is too small to replace recent OSHA dust evidence. v1 used a "growth/hiring signal" as the third
 criterion, but it had no reliable source, so v2 uses recency instead: a recent
 citation comes with an abatement deadline, which is when a plant buys equipment.
 Only dust-related evidence earns recency points, so a lead can't reach Hot on
-unrelated citations (the most a facility with no dust evidence can score is 6).
+unrelated citations. EPA TRI adds one point only when the most recent available
+TRI Basic Data reports a positive metal air release and the facility matches
+uniquely by normalized name, ZIP, and state. TRI reporting is not proof of a
+violation or dust-collection need.
 """
 from __future__ import annotations
 
@@ -43,6 +46,7 @@ class Score:
     dust: int
     recency: int
     size: int
+    tri_air: int
     evidence_date: Optional[date]
     tier: str
     confidence: str
@@ -52,7 +56,7 @@ class Score:
 
     @property
     def total(self) -> int:
-        return self.industry + self.dust + self.recency + self.size
+        return self.industry + self.dust + self.recency + self.size + self.tri_air
 
 
 def months_before(d: date, months: int) -> date:
@@ -133,15 +137,16 @@ def hold_for(fatality_date: Optional[date], hospitalization_date: Optional[date]
 def score(naics: Optional[str], employees: Optional[int], naics_conflict: bool,
           evidence: Sequence[Evidence], as_of: date,
           fatality_date: Optional[date] = None, hospitalization_date: Optional[date] = None,
-          contested_date: Optional[date] = None) -> Score:
+          contested_date: Optional[date] = None, tri_air_release_lbs: float = 0) -> Score:
     _, industry = config.industry_for(naics)
     dust, evidence_date, dust_reason = dust_points(evidence)
     recency = recency_points(evidence_date, as_of)
     size = size_points(employees)
-    total = industry + dust + recency + size
+    tri_air = int(tri_air_release_lbs > 0)
+    total = industry + dust + recency + size + tri_air
     tier = tier_for(total, dust)
     confidence = confidence_for(employees, naics_conflict)
     hold = hold_for(fatality_date, hospitalization_date, contested_date)
     eligible = tier != ARCHIVE and hold is None and confidence != "Low"
-    return Score(industry, dust, recency, size, evidence_date, tier, confidence, hold,
+    return Score(industry, dust, recency, size, tri_air, evidence_date, tier, confidence, hold,
                  eligible, [dust_reason])

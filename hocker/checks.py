@@ -73,15 +73,16 @@ def run(con: duckdb.DuckDBPyConnection) -> list[Check]:
                        USING (facility_id) WHERE coalesce(s.c, 0) <> 1"""),
           "1 score per facility")
 
-    check("scores are 0-11 and equal the sum of their parts",
-          _one(con, """SELECT count(*) FROM scores WHERE total NOT BETWEEN 0 AND 11
-                       OR total <> industry_pts + dust_pts + recency_pts + size_pts"""),
+    check("scores are 0-12 and equal the sum of their parts",
+          _one(con, """SELECT count(*) FROM scores WHERE total NOT BETWEEN 0 AND 12
+                       OR tri_air_pts NOT BETWEEN 0 AND 1
+                       OR total <> industry_pts + dust_pts + recency_pts + size_pts + tri_air_pts"""),
           "all totals consistent")
 
     check("tiers match the score cutoffs",
           _one(con, """SELECT count(*) FROM scores WHERE tier <> CASE WHEN dust_pts = 0 THEN 'Archive'
                        WHEN total >= 8 THEN 'Hot' WHEN total >= 5 THEN 'Warm' ELSE 'Archive' END"""),
-          "Hot 8-11, Warm 5-7, Archive 0-4 or no recent evidence")
+          "Hot 8-12, Warm 5-7, Archive 0-4 or no dust evidence")
 
     check("held or low-confidence leads are never outreach-eligible",
           _one(con, """SELECT count(*) FROM scores WHERE outreach_eligible
@@ -93,4 +94,11 @@ def run(con: duckdb.DuckDBPyConnection) -> list[Check]:
                        SELECT 1 FROM evidence e WHERE e.facility_id = s.facility_id
                        AND e.category IN ('dust', 'adjacent'))"""),
           "all Hot leads backed by records")
+    check("TRI points require a matched positive metal air release",
+          _one(con, """SELECT count(*) FROM scores s WHERE tri_air_pts <>
+                       CASE WHEN EXISTS (
+                           SELECT 1 FROM tri_air_signals t
+                           WHERE t.facility_id = s.facility_id AND t.release_lbs > 0
+                       ) THEN 1 ELSE 0 END"""),
+          f"{_one(con, 'SELECT count(*) FROM tri_air_signals'):,} matched facility signals")
     return out
