@@ -1,4 +1,6 @@
-from hocker.facilities import names_similar, normalize_address, normalize_name, resolve, zip5
+from hocker.facilities import (
+    names_similar, normalize_address, normalize_name, resolve, resolve_with_review, zip5,
+)
 
 
 def test_name_normalization_drops_suffixes_and_dba():
@@ -20,26 +22,40 @@ def test_zip5():
 
 
 def test_same_name_and_zip_merge():
-    ids = resolve([("1", "Sauder Woodworking Co", "502 Middle St", "43502"),
-                   ("2", "SAUDER WOODWORKING COMPANY", "502 MIDDLE STREET", "43502-1111")])
+    ids = resolve([("1", "Sauder Woodworking Co", "502 Middle St", "43502", "OH"),
+                   ("2", "SAUDER WOODWORKING COMPANY", "502 MIDDLE STREET", "43502-1111", "OH")])
     assert ids["1"] == ids["2"]
 
 
 def test_same_name_different_zip_stays_separate():
-    ids = resolve([("1", "Acme Fabrication", "1 Main St", "49301"),
-                   ("2", "Acme Fabrication", "9 Oak St", "60601")])
+    ids = resolve([("1", "Acme Fabrication", "1 Main St", "49301", "MI"),
+                   ("2", "Acme Fabrication", "9 Oak St", "60601", "IL")])
     assert ids["1"] != ids["2"]
 
 
 def test_renamed_company_at_same_address_merges():
-    ids = resolve([("1", "Tootsie Roll Industries, Inc.", "7401 S. Cicero Ave.", "60629"),
-                   ("2", "Tootsie Roll Mfg., LLC", "7401 S CICERO AVENUE", "60629")])
+    ids = resolve([("1", "Tootsie Roll Industries, Inc.", "7401 S. Cicero Ave.", "60629", "IL"),
+                   ("2", "Tootsie Roll Mfg., LLC", "7401 S CICERO AVENUE", "60629", "IL")])
     assert ids["1"] == ids["2"]
 
 
 def test_unrelated_tenants_at_same_address_stay_separate():
-    ids = resolve([("1", "Great Lakes Cabinets", "100 Industrial Dr", "49301"),
-                   ("2", "Precision Powder Coating", "100 Industrial Drive", "49301")])
+    ids = resolve([("1", "Great Lakes Cabinets", "100 Industrial Dr", "49301", "MI"),
+                   ("2", "Precision Powder Coating", "100 Industrial Drive", "49301", "MI")])
+    assert ids["1"] != ids["2"]
+
+
+def test_same_name_without_zip_stays_unmerged_and_is_flagged_for_review():
+    rows = [("1", "Acme Fabrication", "1 Main St", "", "MI"),
+            ("2", "Acme Fabrication", "1 Main St", "", "MI")]
+    ids, review = resolve_with_review(rows)
+    assert ids["1"] != ids["2"]
+    assert review == {"1", "2"}
+
+
+def test_same_name_and_zip_across_states_stays_separate():
+    ids = resolve([("1", "Acme Fabrication", "1 Main St", "49301", "MI"),
+                   ("2", "Acme Fabrication", "1 Main St", "49301", "IL")])
     assert ids["1"] != ids["2"]
 
 

@@ -6,6 +6,7 @@ CREATE OR REPLACE TABLE facility_inspections AS
 SELECT
     i.*,
     m.facility_id,
+    m.review_required,
     d.programs AS dust_program
 FROM inspections i
 JOIN facility_map m USING (activity_nr)
@@ -28,6 +29,7 @@ SELECT
     arg_max(employees, open_date) FILTER (WHERE employees IS NOT NULL) AS employees,
     count(DISTINCT estab_name)                                       AS name_variants,
     count(*)                                                         AS n_inspections,
+    bool_or(review_required)                                         AS facility_match_review_required,
     count(*) FILTER (WHERE open_date >= (SELECT window_start FROM run_params)) AS n_inspections_window,
     min(open_date)                                                   AS first_inspection,
     max(open_date)                                                   AS last_inspection

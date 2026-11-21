@@ -23,12 +23,13 @@ def build_standard_lookup(con: duckdb.DuckDBPyConnection) -> None:
 
 
 def build_facility_map(con: duckdb.DuckDBPyConnection) -> None:
-    rows = con.sql("SELECT CAST(activity_nr AS VARCHAR), estab_name, site_address, zip5 "
+    rows = con.sql("SELECT CAST(activity_nr AS VARCHAR), estab_name, site_address, zip5, site_state "
                    "FROM inspections").fetchall()
-    mapping = facilities.resolve(rows)
-    con.execute("CREATE OR REPLACE TABLE facility_map (activity_nr BIGINT, facility_id VARCHAR)")
-    con.executemany("INSERT INTO facility_map VALUES (?, ?)",
-                    [(int(k), v) for k, v in mapping.items()])
+    mapping, review_required = facilities.resolve_with_review(rows)
+    con.execute("CREATE OR REPLACE TABLE facility_map "
+                "(activity_nr BIGINT, facility_id VARCHAR, review_required BOOLEAN)")
+    con.executemany("INSERT INTO facility_map VALUES (?, ?, ?)",
+                    [(int(k), v, k in review_required) for k, v in mapping.items()])
 
 
 def build_run_params(con: duckdb.DuckDBPyConnection) -> date:
