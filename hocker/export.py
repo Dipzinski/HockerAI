@@ -16,6 +16,8 @@ OSHA_LINK = "https://www.osha.gov/ords/imis/establishment.inspection_detail?id={
 VIOL_TYPES = {"S": "Serious", "W": "Willful", "R": "Repeat", "O": "Other-than-serious", "U": "Unclassified"}
 KEEP_UPPER = {"LLC", "USA", "US", "II", "III", "IV", "CNC", "AG", "LP"}
 SMALL_WORDS = {"AND", "OF", "THE", "FOR", "DBA"}
+# Runs kept in state.json and score_snapshots.json. Re-running a date replaces its entry.
+HISTORY_RUNS = 12
 
 
 def pretty_name(name: str) -> str:
@@ -121,52 +123,70 @@ def _write_csv(leads: list[dict]) -> None:
             w.writerow({**r, "rank": i, "name": pretty_name(r["name"]), "city": (r["city"] or "").title()})
 
 
-def _delta(hot_ids: list[str], as_of: date, ranked: list[dict] | None = None) -> list[str]:
-    """Hot leads that weren't Hot in the previous run (v1's "daily scan", done with a state file).
+def _upsert_run(history: list[dict], entry: dict) -> list[dict]:
+    """Put this run first, drop any older entry for the same date, and keep the latest runs."""
+    others = [run for run in history if run["as_of"] != entry["as_of"]]
+    return [entry, *others][:HISTORY_RUNS]
 
-    The state file is now kept as a versioned score snapshot so the project can
-    reconstruct the ranking and compare later outcomes against the score as it was
-    known at the time.
+
+def _state_history(previous: dict | None) -> list[dict]:
+    """Past runs from state.json. A state file written before history existed counts as one run."""
+    if previous is None:
+        return []
+    return previous.get("history") or [{"as_of": previous["as_of"], "hot_ids": previous["hot_ids"]}]
+
+
+def _write_snapshot(ranked: list[dict], run_date: str, scored_at: str) -> None:
+    """Save this run's full ranking to score_snapshots.json (git-ignored: about 12 MB a run)."""
+    path = config.OUTPUT_DIR / "score_snapshots.json"
+    previous = json.loads(path.read_text()) if path.exists() else {}
+    entry = {
+        "score_version": config.SCORE_VERSION,
+        "as_of": run_date,
+        "scored_at": scored_at,
+        "leads": snapshot_score_run(
+            ranked, as_of=run_date, score_version=config.SCORE_VERSION, scored_at=scored_at,
+        ),
+    }
+    path.write_text(json.dumps({
+        "score_version": config.SCORE_VERSION,
+        "as_of": run_date,
+        "history": _upsert_run(previous.get("history", []), entry),
+    }, indent=1, default=str))
+
+
+def _delta(hot_ids: list[str], as_of: date, ranked: list[dict] | None = None) -> list[str]:
+    """Hot leads that weren't Hot on the previous data date (v1's "daily scan", done with a state file).
+
+    state.json and score_snapshots.json keep the latest HISTORY_RUNS runs, so a lead's
+    outcome can be compared later with the score it had when it was sent. Re-running
+    the same date replaces that run and is still compared with the earlier date.
     """
+    run_date, scored_at = str(as_of), _utc_now()
     state_path = config.OUTPUT_DIR / "state.json"
     previous = json.loads(state_path.read_text()) if state_path.exists() else None
-    scored_at = _utc_now()
-    new = [i for i in hot_ids if previous is None or i not in set(previous.get("hot_ids", []))]
-    history = (previous or {}).get("history", [])
+    history = _state_history(previous)
+    earlier = next((run for run in history if run["as_of"] != run_date), None)
+    seen = set(earlier["hot_ids"]) if earlier else set()
+    new = [i for i in hot_ids if i not in seen] if earlier else []
     entry = {
-        "as_of": str(as_of),
+        "as_of": run_date,
         "score_version": config.SCORE_VERSION,
         "hot_ids": hot_ids,
         "new_hot_ids": new,
         "scored_at": scored_at,
     }
-    history.insert(0, entry)
     state_path.write_text(json.dumps({
-        "as_of": str(as_of),
-        "previous_as_of": previous["as_of"] if previous else None,
+        "as_of": run_date,
+        "previous_as_of": earlier["as_of"] if earlier else None,
         "score_version": config.SCORE_VERSION,
         "hot_ids": hot_ids,
         "new_hot_ids": new,
-        "history": history[:12],
+        "history": _upsert_run(history, entry),
     }, indent=1))
     if ranked is not None:
-        snapshot_path = config.OUTPUT_DIR / "score_snapshots.json"
-        previous_snapshots = json.loads(snapshot_path.read_text()) if snapshot_path.exists() else {"history": []}
-        entry = {
-            "score_version": config.SCORE_VERSION,
-            "as_of": str(as_of),
-            "scored_at": scored_at,
-            "leads": snapshot_score_run(
-                ranked, as_of=str(as_of), score_version=config.SCORE_VERSION, scored_at=scored_at,
-            ),
-        }
-        history = previous_snapshots.get("history", [])
-        history.insert(0, entry)
-        previous_snapshots["history"] = history
-        previous_snapshots["score_version"] = config.SCORE_VERSION
-        previous_snapshots["as_of"] = str(as_of)
-        snapshot_path.write_text(json.dumps(previous_snapshots, indent=1, default=str))
-    return new if previous else []
+        _write_snapshot(ranked, run_date, scored_at)
+    return new
 
 
 def _report(leads: list[dict], records: dict[str, dict], counts: dict, as_of: date,

@@ -7,3 +7,5 @@ __pycache__/
 .env
 # Prompt inputs from `python -m hocker briefs --dry-run`
 outputs/briefs/*.facts.json
+# Full score history for later evaluation, about 12 MB a run (kept on this Mac only)
+outputs/score_snapshots.json
