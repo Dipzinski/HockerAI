@@ -8,7 +8,7 @@ from datetime import date
 
 import duckdb
 
-from . import config
+from . import config, db
 from .facilities import strip_record_prefix
 from .lead_eval import _utc_now, snapshot_score_run
 
@@ -253,8 +253,8 @@ def run(con: duckdb.DuckDBPyConnection, as_of: date, load_counts: dict, checks,
     hot = [r for r in leads if r["tier"] == "Hot"]
     counts = {
         "inspections_national": load_counts["inspection_rows_national"],
-        "inspections": con.sql("SELECT count(*) FROM inspections").fetchone()[0],
-        "citations": con.sql("SELECT count(*) FROM violations").fetchone()[0],
+        "inspections": db.scalar(con, "SELECT count(*) FROM inspections"),
+        "citations": db.scalar(con, "SELECT count(*) FROM violations"),
         "facilities": len(leads),
         "hot": tiers["Hot"], "warm": tiers["Warm"], "archive": tiers["Archive"],
         "hot_eligible": sum(r["outreach_eligible"] for r in hot),

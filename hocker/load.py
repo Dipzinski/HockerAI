@@ -14,7 +14,7 @@ from pathlib import Path
 
 import duckdb
 
-from . import config
+from . import config, db
 
 CSV_OPTIONS = "header=true, all_varchar=true, delim=',', quote='\"', escape='\"', store_rejects=true"
 
@@ -38,8 +38,8 @@ def run(con: duckdb.DuckDBPyConnection) -> dict[str, int]:
         work = Path(tmp)
 
         glob = _extract("inspection", work)
-        counts["inspection_rows_national"] = con.sql(
-            f"SELECT count(*) FROM read_csv('{glob}', {CSV_OPTIONS})").fetchone()[0]
+        counts["inspection_rows_national"] = db.scalar(
+            con, f"SELECT count(*) FROM read_csv('{glob}', {CSV_OPTIONS})")
         con.execute(f"""
             CREATE OR REPLACE TABLE raw_inspection AS
             SELECT * FROM read_csv('{glob}', {CSV_OPTIONS})
@@ -65,7 +65,7 @@ def run(con: duckdb.DuckDBPyConnection) -> dict[str, int]:
             SELECT * FROM read_csv('{glob}', {CSV_OPTIONS})
             WHERE summary_nr IN (SELECT summary_nr FROM raw_accident_injury)
         """)
-        counts["csv_rows_rejected"] = con.sql("SELECT count(*) FROM reject_errors").fetchone()[0]
+        counts["csv_rows_rejected"] = db.scalar(con, "SELECT count(*) FROM reject_errors")
 
     zcta = config.RAW_DIR / "zcta_gazetteer.zip"
     with zipfile.ZipFile(zcta) as z, tempfile.TemporaryDirectory(dir=config.DATA_DIR) as tmp:
@@ -79,5 +79,5 @@ def run(con: duckdb.DuckDBPyConnection) -> dict[str, int]:
         """)
 
     for table in ("inspection", "violation", "emphasis_codes", "accident_injury", "accident"):
-        counts[f"raw_{table}"] = con.sql(f"SELECT count(*) FROM raw_{table}").fetchone()[0]
+        counts[f"raw_{table}"] = db.scalar(con, f"SELECT count(*) FROM raw_{table}")
     return counts

@@ -2,7 +2,8 @@ name: tests
 on: [push, pull_request]
 jobs:
   pytest:
-    runs-on: ubuntu-latest
+    # Pinned: Python 3.9 can't be installed on the Ubuntu 26.04 image that ubuntu-latest now uses.
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         python-version: ["3.9", "3.12"]

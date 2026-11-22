@@ -7,7 +7,7 @@ from datetime import date
 
 import duckdb
 
-from . import checks, config, export, facilities, load, rubric, standards, tri
+from . import checks, config, db, export, facilities, load, rubric, standards, tri
 
 
 def _run_sql(con: duckdb.DuckDBPyConnection, name: str) -> None:
@@ -33,8 +33,8 @@ def build_facility_map(con: duckdb.DuckDBPyConnection) -> None:
 
 
 def build_run_params(con: duckdb.DuckDBPyConnection) -> date:
-    as_of = con.sql("SELECT greatest((SELECT max(open_date) FROM inspections), "
-                    "(SELECT max(issuance_date) FROM violations))").fetchone()[0]
+    as_of = db.scalar(con, "SELECT greatest((SELECT max(open_date) FROM inspections), "
+                            "(SELECT max(issuance_date) FROM violations))")
     con.execute("CREATE OR REPLACE TABLE run_params AS SELECT ?::DATE AS as_of, "
                 "?::DATE AS window_start, ?::DATE AS injury_start",
                 [as_of, rubric.months_before(as_of, config.EVIDENCE_WINDOW_MONTHS),
@@ -126,7 +126,7 @@ def build(skip_load: bool = False) -> dict:
         "matched_forms": tri_stats.matched_forms,
         "unmatched_forms": tri_stats.unmatched_forms,
         "ambiguous_forms": tri_stats.ambiguous_forms,
-        "facilities_with_signal": con.sql("SELECT count(*) FROM tri_air_signals").fetchone()[0],
+        "facilities_with_signal": db.scalar(con, "SELECT count(*) FROM tri_air_signals"),
         "reporting_year": config.TRI_DATA_YEAR,
     }
     summary = export.run(con, as_of, load_counts, results, tri_matches)

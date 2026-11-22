@@ -73,10 +73,10 @@ def test_old_unresolved_contest_holds_outreach_outside_evidence_window():
     evidence = con.sql(
         "SELECT activity_nr FROM evidence WHERE kind = 'citation' ORDER BY activity_nr"
     ).fetchall()
-    hold_date = con.sql("SELECT contested_date FROM holds WHERE facility_id = 'facility-1'").fetchone()[0]
-    hold_reason, outreach_eligible = con.sql(
+    [(hold_date,)] = con.sql("SELECT contested_date FROM holds WHERE facility_id = 'facility-1'").fetchall()
+    [(hold_reason, outreach_eligible)] = con.sql(
         "SELECT hold_reason, outreach_eligible FROM scores WHERE facility_id = 'facility-1'"
-    ).fetchone()
+    ).fetchall()
     assert evidence == [(102,)]  # old citation is outside scoring evidence
     assert str(hold_date) == "2020-07-01"  # but its unresolved contest still holds outreach
     assert hold_reason == "citation under contest" and not outreach_eligible
