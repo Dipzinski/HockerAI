@@ -121,7 +121,7 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python -m hocker all            # download (~3.9 GB, skips unchanged files) + build (about a minute)
 pytest                          # Python tests
-node --test tests/js            # dashboard logic tests (Node 22+)
+node --test "tests/js/*.test.mjs"   # dashboard logic tests (Node 22+)
 python3 -m http.server 8766 --directory docs   # then open http://127.0.0.1:8766
 ```
 
