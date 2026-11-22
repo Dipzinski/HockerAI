@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 import duckdb
 
-from . import config
+from . import config, db
 
 
 @dataclass
@@ -16,7 +16,7 @@ class Check:
 
 
 def _one(con: duckdb.DuckDBPyConnection, sql: str):
-    return con.sql(sql).fetchone()[0]
+    return db.scalar(con, sql)
 
 
 def run(con: duckdb.DuckDBPyConnection) -> list[Check]:
