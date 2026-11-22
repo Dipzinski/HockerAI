@@ -1,44 +1,51 @@
 {
- "as_of": "2026-09-23",
+ "as_of": "2026-11-18",
  "load": {
-  "inspection_rows_national": 5202096,
+  "inspection_rows_national": 5212725,
   "csv_rows_rejected": 0,
-  "raw_inspection": 14464,
-  "raw_violation": 38606,
-  "raw_emphasis_codes": 17304,
-  "raw_accident_injury": 1550,
-  "raw_accident": 1535
+  "raw_inspection": 32743,
+  "raw_violation": 79115,
+  "raw_emphasis_codes": 36498,
+  "raw_accident_injury": 3550,
+  "raw_accident": 3424
  },
  "counts": {
-  "inspections_national": 5202096,
-  "inspections": 14445,
-  "citations": 36472,
-  "facilities": 8914,
-  "hot": 570,
-  "warm": 1661,
-  "archive": 6683,
-  "hot_eligible": 545,
-  "held_hot": 25,
+  "inspections_national": 5212725,
+  "inspections": 32675,
+  "citations": 75213,
+  "facilities": 22447,
+  "hot": 1096,
+  "warm": 3172,
+  "archive": 18179,
+  "hot_eligible": 1046,
+  "held_hot": 50,
   "low_conf_hot": 0,
-  "held_all": 154,
+  "held_all": 944,
   "previous_run": true,
-  "new_hot_since_last_run": 0
+  "new_hot_since_last_run": 61
+ },
+ "tri_matches": {
+  "matched_forms": 964,
+  "unmatched_forms": 3229,
+  "ambiguous_forms": 0,
+  "facilities_with_signal": 445,
+  "reporting_year": 2024
  },
  "checks": [
   {
    "name": "inspection IDs are unique",
    "passed": true,
-   "detail": "14,445 inspections"
+   "detail": "32,675 inspections"
   },
   {
    "name": "every inspection maps to exactly one facility",
    "passed": true,
-   "detail": "8,914 facilities"
+   "detail": "22,447 facilities"
   },
   {
    "name": "every citation belongs to a loaded inspection",
    "passed": true,
-   "detail": "36,472 citations"
+   "detail": "75,213 citations"
   },
   {
    "name": "withdrawn citations are excluded",
@@ -48,12 +55,12 @@
   {
    "name": "every cited standard was classified",
    "passed": true,
-   "detail": "2,488 distinct standards"
+   "detail": "4,371 distinct standards"
   },
   {
    "name": "facilities are in the territory and target industries",
    "passed": true,
-   "detail": "states MI, OH, IN, IL, WI"
+   "detail": "states CA, TX, FL, NY, PA, IL, OH, GA, NC, MI"
   },
   {
    "name": "inspection dates are inside the load window",
@@ -63,7 +70,7 @@
   {
    "name": "site headcounts are 1-4,999 or missing",
    "passed": true,
-   "detail": "24 company-wide totals cleared"
+   "detail": "97 company-wide totals cleared"
   },
   {
    "name": "every facility has exactly one score",
@@ -71,24 +78,29 @@
    "detail": "1 score per facility"
   },
   {
-   "name": "scores are 0-11 and equal the sum of their parts",
+   "name": "scores are 0-12 and equal the sum of their parts",
    "passed": true,
    "detail": "all totals consistent"
   },
   {
    "name": "tiers match the score cutoffs",
    "passed": true,
-   "detail": "Hot 8-11, Warm 5-7, Archive 0-4 or no recent evidence"
+   "detail": "Hot 8-12, Warm 5-7, Archive 0-4 or no dust evidence"
   },
   {
    "name": "held or low-confidence leads are never outreach-eligible",
    "passed": true,
-   "detail": "154 leads on hold"
+   "detail": "944 leads on hold"
   },
   {
    "name": "every Hot lead has cited dust evidence",
    "passed": true,
    "detail": "all Hot leads backed by records"
+  },
+  {
+   "name": "TRI points require a matched positive metal air release",
+   "passed": true,
+   "detail": "445 matched facility signals"
   }
  ]
 }

@@ -1,79 +1,86 @@
-# Lead report: 2026-09-23
+# Lead report: 2026-11-18
 
-Source: OSHA enforcement data (US Department of Labor), inspections opened 2019-01-01 to 2026-09-23 at privately owned facilities in MI, OH, IN, IL, WI in the 7 target industries. Scores use the last 36 months.
+Sources: OSHA enforcement data (US Department of Labor) and EPA TRI reporting year 2024; inspections opened 2019-01-01 to 2026-11-18 at privately owned facilities in CA, TX, FL, NY, PA, IL, OH, GA, NC, MI in the 7 target industries. Scores use the last 36 months.
 
 ## Summary
-- Inspections loaded: 14,445 (from 5,202,096 nationwide)
-- Facilities after merging duplicate records: 8,914
-- Hot: 570 | Warm: 1,661 | Archive: 6,683
-- Outreach-eligible Hot leads: 545 (held for human review: 25; low confidence: 0)
-- New Hot leads since the last run: 0
-- Data-quality checks passed: 13/13
+- Inspections loaded: 32,675 (from 5,212,725 nationwide)
+- Facilities after merging duplicate records: 22,447
+- Hot: 1,096 | Warm: 3,172 | Archive: 18,179
+- Outreach-eligible Hot leads: 1,046 (held for human review: 50; low confidence: 0)
+- New Hot leads since the last run: 61
+- Data-quality checks passed: 14/14
+- EPA TRI 2024 positive metal air-release signals: 445 facilities with an exact name/ZIP/state match (964 reported forms matched; 3,229 unmatched; 0 ambiguous)
 
 ## Top 25 Hot leads (outreach-eligible)
 
 | # | Facility | City | Industry | Employees | Score | Newest dust evidence |
 |---|---|---|---|---|---|---|
-| 1 | Hearing Protection LLC | Watertown, WI | Metal fabrication & machinery | 85 | 11/11 | 2026-08-07 |
-| 2 | Century Roll | Burton, MI | Metal fabrication & machinery | 30 | 11/11 | 2026-07-28 |
-| 3 | Schwing Bioset Inc. | Somerset, WI | Metal fabrication & machinery | 150 | 11/11 | 2026-07-10 |
-| 4 | Microfinish A Division of Surface Prep | Vandalia, OH | Metal fabrication & machinery | 35 | 11/11 | 2026-06-24 |
-| 5 | Strek-o Doors, LLC | Abbotsford, WI | Woodworking, cabinets & furniture | 52 | 11/11 | 2026-06-18 |
-| 6 | Terryberry Company LLC | Grand Rapids, MI | Metal fabrication & machinery | 130 | 11/11 | 2026-06-17 |
-| 7 | Norlen, Inc. | Schofield, WI | Metal fabrication & machinery | 110 | 11/11 | 2026-06-11 |
-| 8 | Dewys Metal Solutions Inc dba Dewys Manufacturing | Marne, MI | Metal fabrication & machinery | 269 | 11/11 | 2026-06-03 |
-| 9 | Apex Structural Innovation LLC | Romulus, MI | Woodworking, cabinets & furniture | 25 | 11/11 | 2026-05-29 |
-| 10 | Van-packer Co. | Buda, IL | Metal fabrication & machinery | 40 | 11/11 | 2026-05-26 |
-| 11 | Abpc Company LLC dba Anchor Bay Powder Coat | New Baltimore, MI | Metal fabrication & machinery | 28 | 11/11 | 2026-05-19 |
-| 12 | Custom Steel, Inc. | Schofield, WI | Metal fabrication & machinery | 25 | 11/11 | 2026-05-12 |
-| 13 | Masters Millwork LLC dba Masters Millwork | Madison Heights, MI | Woodworking, cabinets & furniture | 21 | 11/11 | 2026-04-29 |
-| 14 | Maass Midwest Manufacturing, Inc. | Huntley, IL | Metal fabrication & machinery | 20 | 11/11 | 2026-04-22 |
-| 15 | Molding Automation Concepts, Inc. | Woodstock, IL | Metal fabrication & machinery | 54 | 11/11 | 2026-04-16 |
-| 16 | Mech-tronics Opco, LLC | Melrose Park, IL | Metal fabrication & machinery | 65 | 11/11 | 2026-03-20 |
-| 17 | Meyer Machine & Equipment, Inc dba Hardy Pro-air Systems & Service | Antioch, IL | Metal fabrication & machinery | 24 | 11/11 | 2026-03-09 |
-| 18 | Techniply, LLC | Oconto Falls, WI | Woodworking, cabinets & furniture | 39 | 11/11 | 2026-03-06 |
-| 19 | Wessels Company | Greenwood, IN | Metal fabrication & machinery | 180 | 11/11 | 2026-02-27 |
-| 20 | American Excelsior Company | Rice Lake, WI | Woodworking, cabinets & furniture | 175 | 11/11 | 2026-02-05 |
-| 21 | Uniflyte Inc. | Orion, IL | Metal fabrication & machinery | 44 | 11/11 | 2026-01-23 |
-| 22 | Industrial Steel Construction, Inc | Gary, IN | Metal fabrication & machinery | 325 | 11/11 | 2026-01-07 |
-| 23 | Tarus Products Inc | Sterling Heights, MI | Metal fabrication & machinery | 98 | 11/11 | 2025-12-09 |
-| 24 | Enprotech Industrial Technologies LLC | Cleveland, OH | Metal fabrication & machinery | 41 | 11/11 | 2025-12-04 |
-| 25 | Dynasty Fab, LLC | Roseville, MI | Metal fabrication & machinery | 25 | 11/11 | 2025-11-19 |
+| 1 | Nichols Portland, Inc. Svmp | Wyandotte, MI | Metal fabrication & machinery | 50 | 11/12 | 2026-10-15 |
+| 2 | Indo-mim Inc. | San Antonio, TX | Metal fabrication & machinery | 300 | 11/12 | 2026-10-08 |
+| 3 | American Wood Fibers, Inc. | Laurinburg, NC | Woodworking, cabinets & furniture | 24 | 11/12 | 2026-10-05 |
+| 4 | Cor-met Inc | Brighton, MI | Metal fabrication & machinery | 30 | 11/12 | 2026-10-02 |
+| 5 | Aero Precision Products Inc | Opa Locka, FL | Metal fabrication & machinery | 40 | 11/12 | 2026-09-30 |
+| 6 | 48forty Solutions, LLC | Biglerville, PA | Woodworking, cabinets & furniture | 85 | 11/12 | 2026-09-23 |
+| 7 | Athens Mold and Machine, Inc. | Athens, OH | Metal fabrication & machinery | 58 | 11/12 | 2026-09-23 |
+| 8 | Better Bilt Products Inc. | Addison, IL | Metal fabrication & machinery | 37 | 11/12 | 2026-09-15 |
+| 9 | Holmes Custom Moulding, Ltd. | Millersburg, OH | Woodworking, cabinets & furniture | 40 | 11/12 | 2026-09-04 |
+| 10 | Sterling Machine Technologies | Palmyra, PA | Metal fabrication & machinery | 35 | 11/12 | 2026-09-03 |
+| 11 | Modineer Coatings Division LLC | Benton Harbor, MI | Metal fabrication & machinery | 32 | 11/12 | 2026-08-27 |
+| 12 | Mpbs Enterprise LLC | Orlando, FL | Woodworking, cabinets & furniture | 33 | 11/12 | 2026-08-24 |
+| 13 | Guardian Prefab | Waynesboro, PA | Woodworking, cabinets & furniture | 65 | 11/12 | 2026-08-18 |
+| 14 | Nasatka Barrier Incorporated | Boyertown, PA | Metal fabrication & machinery | 40 | 11/12 | 2026-07-29 |
+| 15 | Century Roll | Burton, MI | Metal fabrication & machinery | 30 | 11/12 | 2026-07-28 |
+| 16 | The American Tank & Fabricating Company | Cleveland, OH | Metal fabrication & machinery | 200 | 11/12 | 2026-07-24 |
+| 17 | M.p.h. Industries, Inc. | Gainesville, FL | Metal fabrication & machinery | 24 | 11/12 | 2026-07-14 |
+| 18 | Apx Enclosures, Incorporated | Greencastle, PA | Metal fabrication & machinery | 65 | 11/12 | 2026-06-25 |
+| 19 | Microfinish A Division of Surface Prep | Vandalia, OH | Metal fabrication & machinery | 35 | 11/12 | 2026-06-24 |
+| 20 | Unicat Catalyst Technologies LLC | Alvin, TX | Metal fabrication & machinery | 29 | 11/12 | 2026-06-24 |
+| 21 | Terryberry Company LLC | Grand Rapids, MI | Metal fabrication & machinery | 130 | 11/12 | 2026-06-17 |
+| 22 | Dewys Metal Solutions Inc dba Dewys Manufacturing | Marne, MI | Metal fabrication & machinery | 269 | 11/12 | 2026-06-03 |
+| 23 | Niles Steel Tank Company | Niles, MI | Metal fabrication & machinery | 10 | 11/12 | 2026-06-03 |
+| 24 | Apex Structural Innovation LLC | Romulus, MI | Woodworking, cabinets & furniture | 25 | 11/12 | 2026-05-29 |
+| 25 | Cameron Manufacturing & Design - Florida | Orlando, FL | Metal fabrication & machinery | 21 | 11/12 | 2026-05-29 |
 
 ## Hot leads by state
 
 | State | Hot | Eligible |
 |---|---|---|
-| MI | 204 | 194 |
-| OH | 102 | 95 |
-| IN | 32 | 31 |
-| IL | 120 | 117 |
-| WI | 112 | 108 |
+| CA | 0 | 0 |
+| TX | 102 | 94 |
+| FL | 84 | 79 |
+| NY | 84 | 80 |
+| PA | 231 | 226 |
+| IL | 121 | 119 |
+| OH | 105 | 100 |
+| GA | 69 | 63 |
+| NC | 97 | 91 |
+| MI | 203 | 194 |
 
 ## Hot leads by industry
 
 | Industry | Hot | Eligible |
 |---|---|---|
-| Woodworking, cabinets & furniture | 89 | 84 |
-| Metal fabrication & machinery | 323 | 314 |
-| Cement, glass & mineral products | 58 | 55 |
-| Food & grain processing | 66 | 61 |
+| Woodworking, cabinets & furniture | 233 | 223 |
+| Metal fabrication & machinery | 558 | 542 |
+| Cement, glass & mineral products | 156 | 150 |
+| Food & grain processing | 85 | 75 |
 | Pharmaceutical & nutraceutical | 1 | 1 |
-| Plastics, resins & composites | 15 | 14 |
-| Foundries | 18 | 16 |
+| Plastics, resins & composites | 38 | 32 |
+| Foundries | 25 | 23 |
 
 ## Data-quality checks
 
-- PASS: inspection IDs are unique (14,445 inspections)
-- PASS: every inspection maps to exactly one facility (8,914 facilities)
-- PASS: every citation belongs to a loaded inspection (36,472 citations)
+- PASS: inspection IDs are unique (32,675 inspections)
+- PASS: every inspection maps to exactly one facility (22,447 facilities)
+- PASS: every citation belongs to a loaded inspection (75,213 citations)
 - PASS: withdrawn citations are excluded (0 withdrawn citations kept)
-- PASS: every cited standard was classified (2,488 distinct standards)
-- PASS: facilities are in the territory and target industries (states MI, OH, IN, IL, WI)
+- PASS: every cited standard was classified (4,371 distinct standards)
+- PASS: facilities are in the territory and target industries (states CA, TX, FL, NY, PA, IL, OH, GA, NC, MI)
 - PASS: inspection dates are inside the load window (2019-01-01 to as-of date)
-- PASS: site headcounts are 1-4,999 or missing (24 company-wide totals cleared)
+- PASS: site headcounts are 1-4,999 or missing (97 company-wide totals cleared)
 - PASS: every facility has exactly one score (1 score per facility)
-- PASS: scores are 0-11 and equal the sum of their parts (all totals consistent)
-- PASS: tiers match the score cutoffs (Hot 8-11, Warm 5-7, Archive 0-4 or no recent evidence)
-- PASS: held or low-confidence leads are never outreach-eligible (154 leads on hold)
+- PASS: scores are 0-12 and equal the sum of their parts (all totals consistent)
+- PASS: tiers match the score cutoffs (Hot 8-12, Warm 5-7, Archive 0-4 or no dust evidence)
+- PASS: held or low-confidence leads are never outreach-eligible (944 leads on hold)
 - PASS: every Hot lead has cited dust evidence (all Hot leads backed by records)
+- PASS: TRI points require a matched positive metal air release (445 matched facility signals)
