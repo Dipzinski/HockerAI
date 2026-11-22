@@ -786,10 +786,10 @@
         <!-- Minimal Situation Briefing -->
         <div class="situation-hero">
           <div class="hero-tag">⚡ Current Objective</div>
-          <h2>Active Compliance Abatement Queue</h2>
+          <h2>Recent OSHA dust records</h2>
           <p>
-            The facilities below have recent OSHA enforcement citations (combustible dust, silica, ventilation) or EPA TRI metal air releases with mandatory abatement deadlines.
-            <strong>Action:</strong> Contact the Plant Operations Manager or EHS Director to offer Hocker's engineered dust collection retrofit before their compliance deadline expires.
+            Each facility below has a dust-related OSHA citation or dust-emphasis inspection (combustible dust, silica, ventilation, air contaminants) in the last 36 months. Some also report metal air releases to EPA's Toxics Release Inventory.
+            Open a lead to check its public OSHA record before contacting anyone.
           </p>
         </div>
 
@@ -831,8 +831,7 @@
           </div>
 
           <div class="widget-bottom">
-            <span style="font-size:11px; color:var(--text-muted);">Auto-saves to browser</span>
-            <button class="btn-pill" id="btn-reset-demo" style="font-size:11px; padding:3px 8px;">Reset Demo</button>
+            <span style="font-size:11px; color:var(--text-muted);">Saved in this browser only</span>
           </div>
         </div>
       </aside>
@@ -847,7 +846,7 @@
     <div class="directory-container">
       <div style="margin-bottom:4px;">
         <h2 style="font-size:20px; font-weight:600;">Full Facility Directory</h2>
-        <p style="font-size:13px; color:var(--text-secondary);">4,286 facilities across 10 manufacturing states. Filter and inspect records.</p>
+        <p style="font-size:13px; color:var(--text-secondary);"><span id="dir-total">-</span> Hot and Warm facilities across 10 states. Filter and inspect records.</p>
       </div>
 
       <div class="dir-search-bar">
@@ -880,7 +879,6 @@
                 <th style="text-align:right">Employees</th>
                 <th>Score</th>
                 <th>Primary Dust Signal</th>
-                <th>Recommended Action</th>
                 <th>Pipeline</th>
                 <th>Action</th>
               </tr>
@@ -934,7 +932,7 @@
         <tbody>
           <tr><td><strong>Industry Fit</strong></td><td>0–3 pts</td><td>Woodworking & Fabricated Metal (3 pts); Cement & Food (2 pts); Pharma, Plastics & Foundries (1 pt).</td></tr>
           <tr><td><strong>Dust Evidence</strong></td><td>0–3 pts</td><td>3 pts: Dust-specific citation (silica, industrial ventilation, air limits); 2 pts: Combustible Dust NEP or housekeeping (1910.22); 1 pt: other serious violation.</td></tr>
-          <tr><td><strong>Recency</strong></td><td>0–3 pts</td><td>Within 12 months (3 pts), 24 months (2 pts), 36 months (1 pt). Impending abatement deadlines drive equipment orders.</td></tr>
+          <tr><td><strong>Recency</strong></td><td>0–3 pts</td><td>Within 12 months (3 pts), 24 months (2 pts), 36 months (1 pt).</td></tr>
           <tr><td><strong>Site Size</strong></td><td>0–2 pts</td><td>20–500 site headcount (2 pts); 10–19 or 501–1,000 (1 pt).</td></tr>
           <tr><td><strong>EPA TRI Air Release</strong></td><td>0–1 pt</td><td>Reported fugitive or stack metal air emissions in EPA TRI 2024.</td></tr>
         </tbody>
@@ -958,19 +956,8 @@
   </div>
   <div class="drawer-scroll">
     <div>
-      <div class="drawer-block-title">Recommended Strategy</div>
+      <div class="drawer-block-title">Status</div>
       <div class="action-callout" id="dr-action-callout"></div>
-    </div>
-
-    <div>
-      <div class="drawer-block-title">Verified Outreach Draft</div>
-      <div class="draft-box">
-        <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">
-          Subject: <strong style="color:var(--text-primary);" id="dr-email-subject">-</strong>
-        </div>
-        <div class="draft-pre" id="dr-email-body"></div>
-        <button class="btn-pill btn-pill-primary" id="btn-copy-email">📋 Copy Email Draft</button>
-      </div>
     </div>
 
     <div>
@@ -1004,6 +991,8 @@
     return;
   }
   const leads = rawData.leads.map((d, i) => ({ ...d, rank: i + 1 }));
+  $("badge-all").textContent = fmt(leads.length);
+  $("dir-total").textContent = fmt(leads.length);
 
   // Populate States & Industries
   const states = rawData.territory || ["CA", "TX", "FL", "NY", "PA", "IL", "OH", "GA", "NC", "MI"];
@@ -1026,22 +1015,15 @@
     { id: "hold", label: "On Hold", icon: "⏸️", sub: "Safety hold or contest" },
   ];
 
-  const PIPELINE_KEY = "hocker_pipeline_spaceblack_v4";
+  // v4 held made-up demo stages; drop it so every browser starts from an empty pipeline.
+  const PIPELINE_KEY = "hocker_pipeline_v5";
+  localStorage.removeItem("hocker_pipeline_spaceblack_v4");
   function loadPipeline() {
     const saved = localStorage.getItem(PIPELINE_KEY);
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try { return JSON.parse(saved); } catch (e) { console.warn("Ignoring unreadable saved pipeline", e); }
     }
-    const initial = {};
-    const topHot = leads.filter(d => d.tier === "Hot" && d.outreach_eligible).slice(0, 100);
-    topHot.forEach((d, idx) => {
-      if (idx < 15) initial[d.id] = "reached";
-      else if (idx < 20) initial[d.id] = "contact";
-      else if (idx < 22) initial[d.id] = "audit";
-      else initial[d.id] = "top";
-    });
-    leads.filter(d => !!d.hold).slice(0, 5).forEach(d => { initial[d.id] = "hold"; });
-    return initial;
+    return {};
   }
 
   let pipeline = loadPipeline();
@@ -1066,75 +1048,11 @@
     renderDirectoryTable();
   }
 
-  // Next Step Engine
-  function getNextStep(lead) {
-    if (lead.hold) {
-      return {
-        action: "Hold Outreach — Review Legal/Safety Record",
-        detail: `OSHA record has a ${lead.hold}. Do not contact until cleared by safety/sales management.`,
-        targetRole: "Internal Compliance Review"
-      };
-    }
-    const emp = lead.employees || 0;
-    let targetRole = "Plant Operations Manager";
-    if (emp > 200) targetRole = "Director of EHS / VP of Manufacturing";
-    else if (emp > 60) targetRole = "Plant Manager / EHS Coordinator";
-
-    const hasNEP = lead.inspections.some(i => i.dust_program === "Combustible Dust NEP");
-    const hasSilica = lead.inspections.some(i => i.dust_program === "Silica emphasis program" || (i.citations && i.citations.some(c => c.standard && c.standard.includes("1910.1053"))));
-    const hasTri = !!lead.tri_air_signal;
-
-    let action = "";
-    let detail = "";
-
-    if (hasNEP) {
-      action = `Send Combustible Dust Compliance Brief to ${targetRole}`;
-      detail = `Reference recent Combustible Dust NEP inspection and offer NFPA 652/654 deflagration venting & extraction audit before abatement verification.`;
-    } else if (hasSilica) {
-      action = `Propose Silica HEPA Extraction Solution to ${targetRole}`;
-      detail = `Offer source-capture HEPA filtration engineering to achieve OSHA 1910.1053 respirable crystalline silica compliance.`;
-    } else if (hasTri) {
-      action = `Present Metal Emission Capture Case to ${targetRole}`;
-      detail = `Address reported ${fmtAmt(lead.tri_air_signal.release_lbs)} lbs of ${lead.tri_air_signal.chemicals.join(', ')} air releases with point-source filtration.`;
-    } else {
-      action = `Schedule Introductory Airflow Review with ${targetRole}`;
-      detail = `Leverage recent ${lead.dust_reason} citation to discuss turnkey dust collector sizing and duct balancing.`;
-    }
-
-    return { action, detail, targetRole };
-  }
-
-  function getEmailDraft(lead, nextStep) {
-    const inspection = lead.inspections && lead.inspections[0];
-    const inspId = inspection ? inspection.inspection_id : "";
-    const program = inspection ? inspection.dust_program : "";
-
-    let subject = `Dust collection & compliance support — ${lead.name} (${lead.city})`;
-    let hook = `I noticed the recent OSHA inspection at your ${lead.city} facility${inspId ? ' (Inspection #' + inspId + ')' : ''}. Manufacturers in ${lead.industry.toLowerCase()} frequently face tight deadlines when bringing particulate extraction into verified compliance.`;
-
-    if (program === "Combustible Dust NEP") {
-      subject = `Combustible dust mitigation & airflow design — ${lead.name} (${lead.city})`;
-      hook = `I noted the recent Combustible Dust National Emphasis Program inspection at your ${lead.city} operations${inspId ? ' (Inspection #' + inspId + ')' : ''}. Facilities in your sector often require fast-turn engineering to align extraction hoods and deflagration venting with NFPA 652/654 standards.`;
-    } else if (lead.tri_air_signal) {
-      subject = `Particulate emission capture — ${lead.name} (${lead.city})`;
-      hook = `In reviewing EPA TRI air release disclosures for ${lead.state}, I noted ${lead.name}'s reported metal releases in ${lead.city}. We partner with plants in your industry to engineer point-source collection that cuts emissions and improves plant air quality.`;
-    }
-
-    const body = `Hi [Name],
-
-${hook}
-
-At Hocker North America (based in Ada, Michigan), we design, build, and service turnkey industrial dust collection and air filtration systems.
-
-Would you or your plant engineering team be open to a brief 15-minute introductory call next week to see if we can help verify your current airflow sizing or abatement requirements?
-
-Best regards,
-
-[Sales Rep Name]
-Hocker North America · Ada, MI
-(616) 555-0190 · www.hocker-northamerica.com`;
-
-    return { subject, body };
+  // Facts only: hold reason or outreach readiness, straight from the lead record.
+  function leadStatus(lead) {
+    if (lead.hold) return `On hold: ${lead.hold}. A person should review the record before anyone contacts this plant.`;
+    if (lead.outreach_eligible) return `${lead.tier} lead, ${lead.score.total}/12. Ready for outreach.`;
+    return `${lead.tier} lead, ${lead.score.total}/12. Not outreach-ready: the site headcount is unknown and the industry code changes between inspections.`;
   }
 
   // ============================================================================
@@ -1149,6 +1067,7 @@ Hocker North America · Ada, MI
       if (counts[st] !== undefined) counts[st]++;
     }
     counts.top = Math.max(0, 100 - counts.reached - counts.contact - counts.audit);
+    counts.hold = leads.filter(d => !!d.hold).length;
 
     for (const stage of STAGES) {
       const row = document.createElement("div");
@@ -1171,15 +1090,6 @@ Hocker North America · Ada, MI
       box.append(row);
     }
   }
-
-  $("btn-reset-demo").onclick = () => {
-    localStorage.removeItem(PIPELINE_KEY);
-    pipeline = loadPipeline();
-    activeStageFilter = null;
-    savePipeline();
-    renderFeed();
-    showToast("Funnel reset to initial demo state");
-  };
 
   // ============================================================================
   // TAB 1: COMMAND CENTER FEED
@@ -1220,14 +1130,13 @@ Hocker North America · Ada, MI
     }
 
     for (const d of pool) {
-      const nextStep = getNextStep(d);
       const stage = getLeadStage(d.id);
 
       let sitText = `Cited for ${d.dust_reason} (${d.evidence_date || "recent"}).`;
       const nep = d.inspections.find(i => i.dust_program);
       if (nep) {
         const cit = nep.citations && nep.citations[0];
-        sitText = `Inspected under <strong>${nep.dust_program}</strong>${cit ? ` (${cit.standard}: ${cit.title} · $${fmt(cit.penalty_usd)} penalty)` : ''}. Abatement active.`;
+        sitText = `Inspected under <strong>${nep.dust_program}</strong>${cit ? ` (${cit.standard}: ${cit.title} · $${fmt(cit.penalty_usd)} penalty)` : ''}.`;
       } else if (d.tri_air_signal) {
         sitText = `Reported <strong>${fmtAmt(d.tri_air_signal.release_lbs)} lbs</strong> of metal air emissions (${d.tri_air_signal.chemicals.join(", ")}) in EPA TRI.`;
       }
@@ -1253,12 +1162,6 @@ Hocker North America · Ada, MI
           <strong>The Situation:</strong> ${sitText}
         </div>
 
-        <div class="action-callout">
-          <div class="action-label">Recommended Action</div>
-          <div class="action-text">${nextStep.action}</div>
-          <div class="action-target">Target: <strong>${nextStep.targetRole}</strong></div>
-        </div>
-
         <div class="card-footer">
           <div style="display:flex; align-items:center; gap:8px;">
             <span style="font-size:11px; color:var(--text-muted); font-weight:600;">Funnel Stage:</span>
@@ -1268,17 +1171,12 @@ Hocker North America · Ada, MI
           </div>
           <div style="display:flex; align-items:center; gap:8px;">
             <button class="btn-pill btn-view-osha" style="font-size:11px; padding:4px 10px;">OSHA Details</button>
-            <button class="btn-pill btn-pill-primary btn-draft-email" style="font-size:11px; padding:4px 12px;">✉️ Draft Email</button>
           </div>
         </div>
       `;
 
       card.querySelector("h3").onclick = () => openDrawer(d);
       card.querySelector(".btn-view-osha").onclick = () => openDrawer(d);
-      card.querySelector(".btn-draft-email").onclick = () => {
-        openDrawer(d);
-        setTimeout(() => $("dr-email-body").scrollIntoView({ behavior: "smooth", block: "center" }), 150);
-      };
       card.querySelector(".stage-select").onchange = (e) => {
         setLeadStage(d.id, e.target.value);
         showToast(`Moved ${d.name} to ${STAGES.find(s => s.id === e.target.value).label}`);
@@ -1345,7 +1243,6 @@ Hocker North America · Ada, MI
 
     const pageSlice = dirFiltered.slice((dirPage - 1) * dirPageSize, dirPage * dirPageSize);
     for (const d of pageSlice) {
-      const nextStep = getNextStep(d);
       const stage = getLeadStage(d.id);
 
       const tr = document.createElement("tr");
@@ -1359,7 +1256,6 @@ Hocker North America · Ada, MI
         <td class="tabular" style="text-align:right">${d.employees ? fmt(d.employees) : '—'}</td>
         <td><span class="badge-score" style="font-size:11px; padding:2px 6px;">${d.score.total}/12</span></td>
         <td style="font-size:12px;">${d.dust_reason || 'None'}</td>
-        <td style="font-size:12px; max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${nextStep.action}">${nextStep.action}</td>
         <td>
           <select class="stage-select stage-dir-sel" data-id="${d.id}" style="font-size:11px; padding:2px 6px;">
             ${STAGES.map(s => `<option value="${s.id}" ${stage === s.id ? 'selected' : ''}>${s.icon} ${s.label.split(' ')[0]}</option>`).join('')}
@@ -1454,26 +1350,9 @@ Hocker North America · Ada, MI
   // APPLE SLIDE-OVER SHEET (DRAWER)
   // ============================================================================
   function openDrawer(d) {
-    const nextStep = getNextStep(d);
-    const draft = getEmailDraft(d, nextStep);
-
     $("dr-title").textContent = d.name;
     $("dr-meta").textContent = `${d.city}, ${d.state} ${d.zip || ''} · ${d.industry} · ${d.employees ? fmt(d.employees) + ' site employees' : 'Headcount unverified'}`;
-
-    $("dr-action-callout").innerHTML = `
-      <div class="action-label">Recommended Action</div>
-      <div class="action-text">${nextStep.action}</div>
-      <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">${nextStep.detail}</div>
-      <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Target: <strong>${nextStep.targetRole}</strong></div>
-    `;
-
-    $("dr-email-subject").textContent = draft.subject;
-    $("dr-email-body").textContent = draft.body;
-
-    $("btn-copy-email").onclick = () => {
-      navigator.clipboard.writeText(`Subject: ${draft.subject}\n\n${draft.body}`);
-      showToast("Email draft copied to clipboard!");
-    };
+    $("dr-action-callout").textContent = leadStatus(d);
 
     const oshaBox = $("dr-osha-records");
     oshaBox.replaceChildren();
@@ -1528,11 +1407,10 @@ Hocker North America · Ada, MI
 
   // Export CSV
   $("btn-export-csv").onclick = () => {
-    const rows = [["Rank", "Name", "City", "State", "Industry", "Employees", "Score", "Tier", "Pipeline Stage", "Next Action"]];
+    const rows = [["Rank", "Name", "City", "State", "Industry", "Employees", "Score", "Tier", "Pipeline Stage"]];
     for (const d of leads.slice(0, 100)) {
-      const nextStep = getNextStep(d);
       const stage = getLeadStage(d.id);
-      rows.push([d.rank, `"${d.name}"`, `"${d.city}"`, d.state, `"${d.industry}"`, d.employees || "", d.score.total, d.tier, stage, `"${nextStep.action}"`]);
+      rows.push([d.rank, `"${d.name}"`, `"${d.city}"`, d.state, `"${d.industry}"`, d.employees || "", d.score.total, d.tier, stage]);
     }
     const csvContent = "data:text/csv;charset=utf-8," + rows.map(r => r.join(",")).join("\n");
     const link = document.createElement("a");
