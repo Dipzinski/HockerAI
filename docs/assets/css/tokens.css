@@ -1,0 +1,118 @@
+/* Design tokens: color, glass, type, shape. Light first; dark follows the system. */
+
+:root {
+  color-scheme: light dark;
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-rounded: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+
+  --bg: #f5f5f7;
+  --wash-1: rgba(52, 199, 112, 0.16);
+  --wash-2: rgba(10, 132, 255, 0.10);
+  --wash-3: rgba(48, 176, 199, 0.10);
+  --surface: #ffffff;
+  --fill: rgba(118, 118, 128, 0.12);
+  --fill-strong: rgba(118, 118, 128, 0.2);
+  --hover: rgba(0, 0, 0, 0.045);
+  --separator: rgba(60, 60, 67, 0.13);
+  --segment-on: #ffffff;
+
+  --text: #1d1d1f;
+  --text-2: #6e6e73;
+  --text-3: #86868b;
+
+  /* Safety green: --accent for text and solid buttons (4.5:1+), --accent-fill for graphics. */
+  --accent: #0e7a3e;
+  --accent-fill: #1f9d55;
+  --accent-tint: rgba(31, 157, 85, 0.12);
+  --on-accent: #ffffff;
+
+  /* Amber is only for safety holds. */
+  --amber: #9a5b00;
+  --amber-fill: #ff9f0a;
+  --amber-tint: rgba(255, 159, 10, 0.14);
+
+  --pleat-off: rgba(60, 60, 67, 0.13);
+  --meter-cap: rgba(60, 60, 67, 0.3);
+  --dot-warm: rgba(60, 60, 67, 0.32);
+
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-bar: rgba(255, 255, 255, 0.72);
+  --glass-edge: rgba(0, 0, 0, 0.06);
+  --glass-highlight: rgba(255, 255, 255, 0.85);
+  --glass-blur: blur(30px) saturate(180%);
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.04), 0 10px 30px rgba(0, 0, 0, 0.06);
+  --shadow-pop: 0 2px 6px rgba(0, 0, 0, 0.06), 0 20px 50px rgba(0, 0, 0, 0.14);
+  --scrim: rgba(0, 0, 0, 0.18);
+
+  --radius-s: 10px;
+  --radius-m: 14px;
+  --radius-l: 22px;
+  --pane-radius: 18px;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --wash-1: rgba(48, 209, 88, 0.13);
+    --wash-2: rgba(10, 132, 255, 0.10);
+    --wash-3: rgba(100, 210, 255, 0.06);
+    --surface: #1c1c1e;
+    --fill: rgba(118, 118, 128, 0.24);
+    --fill-strong: rgba(118, 118, 128, 0.34);
+    --hover: rgba(255, 255, 255, 0.06);
+    --separator: rgba(84, 84, 88, 0.6);
+    --segment-on: #636366;
+
+    --text: #f5f5f7;
+    --text-2: #a1a1a6;
+    --text-3: #8e8e93;
+
+    --accent: #3ddc84;
+    --accent-fill: #30d158;
+    --accent-tint: rgba(48, 209, 88, 0.16);
+    --on-accent: #00210d;
+
+    --amber: #ffb340;
+    --amber-fill: #ff9f0a;
+    --amber-tint: rgba(255, 159, 10, 0.16);
+
+    --pleat-off: rgba(235, 235, 245, 0.14);
+    --meter-cap: rgba(235, 235, 245, 0.32);
+    --dot-warm: rgba(235, 235, 245, 0.3);
+
+    --glass-bg: rgba(30, 30, 32, 0.55);
+    --glass-bar: rgba(28, 28, 30, 0.72);
+    --glass-edge: rgba(255, 255, 255, 0.08);
+    --glass-highlight: rgba(255, 255, 255, 0.1);
+    --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.35);
+    --shadow-pop: 0 2px 6px rgba(0, 0, 0, 0.4), 0 24px 60px rgba(0, 0, 0, 0.55);
+    --scrim: rgba(0, 0, 0, 0.45);
+  }
+}
+
+/* Glass falls back to solid surfaces when blur is off or unsupported. */
+@media (prefers-reduced-transparency: reduce) {
+  :root { --glass-bg: var(--surface); --glass-bar: var(--surface); --glass-blur: none; }
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root { --glass-bg: var(--surface); --glass-bar: var(--surface); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-edge);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--shadow-soft);
+}

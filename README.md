@@ -6,7 +6,7 @@ Built for Hocker North America, a dust-collection company in Stuart, Florida, wh
 
 **[Live dashboard](https://dipzinski.github.io/HockerAI/)** · [Lead report](outputs/report.md) · [Lead list (CSV)](outputs/leads.csv)
 
-![Earlier dashboard snapshot from the Great Lakes prototype; the live dashboard now uses the ten-state scope](docs/img/dashboard.png)
+![Dashboard overview: top leads with their 12-pleat score meters, priority count, pipeline, dust signals, and a dot map of leads across the ten states](docs/img/dashboard.png)
 
 ## The problem
 
@@ -120,8 +120,9 @@ The 14 checks (`hocker/checks.py`) cover unique IDs, one facility per inspection
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python -m hocker all            # download (~3.9 GB, skips unchanged files) + build (about a minute)
-pytest                          # 58 tests
-open docs/index.html            # or serve docs/ and open it in a browser
+pytest                          # Python tests
+node --test tests/js            # dashboard logic tests (Node 22+)
+python3 -m http.server 8766 --directory docs   # then open http://127.0.0.1:8766
 ```
 
 AI briefs (optional; needs an Anthropic API key):
@@ -139,8 +140,8 @@ Rerunning `python -m hocker all` after the Department of Labor updates its files
 ```
 hocker/           Python package: download, load, facilities, standards, tri, rubric, checks, export, briefs, verify
 sql/              DuckDB SQL: staging and features
-tests/            pytest: parsing, merging, scoring, verifier, retry loop
-docs/             GitHub Pages dashboard (index.html + data/leads.json)
+tests/            pytest: parsing, merging, scoring, verifier, retry loop; tests/js: dashboard logic
+docs/             GitHub Pages dashboard (index.html, assets/ CSS and JS modules, data/leads.json)
 outputs/          leads.csv, report.md, run_log.json, briefs/
 v1-prompt-prototype/   the July 2026 prototype (see below)
 ```
