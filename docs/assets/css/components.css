@@ -8,7 +8,7 @@
   display: grid; place-items: center;
   background: linear-gradient(160deg, var(--accent-fill), var(--accent));
   color: #fff;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 2px 8px rgba(31, 157, 85, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 1px 2px rgba(0, 0, 0, 0.18);
 }
 .brand-mark svg { width: 18px; height: 18px; }
 .brand-name { font: 700 15px/1.1 var(--font-display); letter-spacing: -0.01em; }
@@ -125,14 +125,6 @@
   background: var(--accent-tint); color: var(--accent); font-size: 12.5px; font-weight: 600;
 }
 .chip svg { width: 12px; height: 12px; }
-
-/* Filter meter: a 12-pleat cartridge, one pleat per point. */
-.meter { display: block; overflow: visible; }
-.meter .pleat { fill: var(--pleat-off); }
-.meter .pleat.on { fill: var(--accent-fill); }
-.meter .pleat-fold { fill: #fff; opacity: 0.32; }
-.meter .meter-cap { fill: var(--meter-cap); }
-.meter .meter-label { font: 600 10px var(--font); fill: var(--text-2); }
 
 /* Popover */
 .popover {

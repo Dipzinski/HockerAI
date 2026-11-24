@@ -5,9 +5,11 @@ import { STAGES } from "../pipeline.js";
 import { breakdown, formatDate, tierLine, whyLabel } from "../score.js";
 import { el, icon, fmt, safeUrl } from "../dom.js";
 import { buildHash } from "../router.js";
-import { filterMeter, factorPleats } from "../widgets/filter-meter.js";
+import { filterMeter, groupMeter, factorPleats } from "../widgets/filter-meter.js";
 
 let whyOpen = false;
+let lastAnimated = null;
+const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function stageSelect(lead, ctx) {
   const current = ctx.pipeline.stageOf(lead);
@@ -33,7 +35,7 @@ function header(lead, ctx) {
 }
 
 function factorRow(row) {
-  return el("li", { class: "factor" },
+  return el("li", { class: "factor", id: `factor-${row.key}`, tabindex: "-1", "data-factor": row.key },
     factorPleats(row.points, row.max),
     el("div", {},
       el("div", { class: "factor-name", text: row.label }),
@@ -48,19 +50,31 @@ function scoreCard(lead, ctx) {
     el("ol", { class: "factor-list" }, breakdown(lead, ctx.data.asOf).map(factorRow)),
     el("p", { class: "tier-line", text: tierLine(lead) }),
     el("a", { href: "#/scoring" }, "How scoring works"));
+  const setOpen = (open) => {
+    whyOpen = open;
+    toggle.setAttribute("aria-expanded", String(open));
+    panel.hidden = !open;
+  };
   const toggle = el("button", { class: "text-btn why-toggle", type: "button",
     "aria-expanded": String(whyOpen), "aria-controls": panelId,
-    onClick: () => {
-      whyOpen = !whyOpen;
-      toggle.setAttribute("aria-expanded", String(whyOpen));
-      panel.hidden = !whyOpen;
-    } }, whyLabel(lead), icon("chevronRight"));
+    onClick: () => setOpen(!whyOpen) }, whyLabel(lead), icon("chevronRight"));
+  const showFactor = (key) => {
+    setOpen(true);
+    panel.querySelectorAll(".factor.hl").forEach((n) => n.classList.remove("hl"));
+    const row = panel.querySelector(`[data-factor="${key}"]`);
+    if (!row) return;
+    row.classList.add("hl");
+    row.scrollIntoView({ block: "nearest", behavior: reducedMotion() ? "auto" : "smooth" });
+    row.focus({ preventScroll: true });
+  };
+  const animate = lastAnimated !== lead.id;
+  lastAnimated = lead.id;
   return el("section", { class: "card", "aria-label": "Score" },
     el("div", { class: "score-top" },
       el("div", { class: "score-num" },
         el("span", { class: "big" }, String(lead.score.total), el("small", { text: "/12" })),
         el("span", { class: "tier-word", text: `${lead.tier} lead` })),
-      el("div", { class: "score-meter" }, filterMeter(lead.score, "lg"))),
+      el("div", { class: "score-meter" }, groupMeter(lead.score, { onGroup: showFactor, animate }))),
     toggle, panel);
 }
 

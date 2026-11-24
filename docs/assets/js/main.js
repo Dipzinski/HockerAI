@@ -59,7 +59,7 @@ async function start() {
     home: () => renderHome(document.getElementById("view-home"), ctx),
     leads: (route) => leadsView.render(route),
     map: (route) => renderMap(document.getElementById("view-map"), ctx, route),
-    scoring: () => renderScoring(document.getElementById("view-scoring"), ctx),
+    scoring: (route) => renderScoring(document.getElementById("view-scoring"), ctx, route),
   };
   let currentView = null;
 

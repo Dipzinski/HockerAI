@@ -1,79 +1,74 @@
-// The score as a pleated filter cartridge: 12 pleats in five factor groups.
+// The score as a pleated filter cartridge: 12 folded pleats in five factor groups.
+// Earned pleats are solid green with a lit and a shaded face; unearned ones are empty wells.
 
-import { FACTORS, MAX_SCORE } from "../score.js";
-import { svg } from "../dom.js";
+import { svg, el } from "../dom.js";
+import { meterLabel, meterLayout, factorLayout, pleatFaces } from "./meter-layout.js";
 
-const SIZES = {
-  sm: { w: 2.5, gap: 1.25, group: 3.5, h: 14, cap: 0, pad: 0, labels: false, rx: 1.25 },
-  lg: { w: 11, gap: 3, group: 11, h: 44, cap: 3, pad: 8, labels: true, rx: 3 },
-};
-const CAP_GAP = 3;
-const LABEL_H = 18;
+export { meterLabel };
 
-export function meterLabel(score) {
-  const parts = FACTORS.map((f) => `${f.label.toLowerCase()} ${score[f.key] || 0} of ${f.max}`);
-  return `Score ${score.total} of ${MAX_SCORE}: ${parts.join(", ")}`;
+const points = (pts) => pts.map((p) => p.map((n) => Math.round(n * 100) / 100).join(",")).join(" ");
+
+function pleat(unit, layout) {
+  const { size: s, top } = layout;
+  const [lit, shade] = pleatFaces(unit.x, top, s);
+  const wellFaces = [svg("polygon", { points: points(lit), class: "face lit" }),
+    svg("polygon", { points: points(shade), class: "face shade" })];
+  if (!unit.on) return svg("g", { class: "pleat well", "data-group": unit.key }, wellFaces);
+  const earned = svg("g", { class: "pleat earned", style: `animation-delay:${unit.delay}ms` },
+    svg("polygon", { points: points(lit), class: "face lit" }),
+    svg("polygon", { points: points(shade), class: "face shade" }));
+  return svg("g", { class: "pleat-slot", "data-group": unit.key }, svg("g", { class: "well" }, wellFaces), earned);
 }
 
-function layout(score, s) {
-  let x = s.pad;
-  const pleats = [];
-  const groups = [];
-  FACTORS.forEach((f, gi) => {
-    if (gi) x += s.group;
-    const start = x;
-    for (let i = 0; i < f.max; i += 1) {
-      if (i) x += s.gap;
-      pleats.push({ x, on: i < (score[f.key] || 0) });
-      x += s.w;
-    }
-    groups.push({ cx: (start + x) / 2, text: f.short });
-  });
-  return { pleats, groups, width: x + s.pad };
+function rails(layout) {
+  const { size: s, bodyBottom } = layout;
+  return layout.groups.flatMap((g) => ["top", "bottom"].map((side) =>
+    svg("rect", { x: g.x0 - 2.5, y: side === "top" ? 0 : bodyBottom + s.railGap, width: g.x1 - g.x0 + 5,
+      height: s.rail, rx: s.rail / 2, class: g.full ? "rail full" : "rail", "data-group": g.key })));
+}
+
+function groupLabels(layout) {
+  return layout.groups.map((g) => svg("text", { x: g.cx, y: layout.height - 3, "text-anchor": "middle",
+    "data-group": g.key, class: g.full ? "meter-label full" : "meter-label" }, g.short));
+}
+
+function draw(layout, { cls, animate, label }) {
+  const root = svg("svg", { viewBox: `0 0 ${layout.width} ${layout.height}`, width: layout.width, height: layout.height,
+    class: `meter ${cls}${animate ? " meter-anim" : ""}`,
+    ...(label ? { role: "img", "aria-label": label } : { "aria-hidden": "true", focusable: "false" }) });
+  root.style.setProperty("--stroke", layout.size.stroke);
+  if (layout.size.rail) root.append(...rails(layout));
+  root.append(...layout.units.map((u) => pleat(u, layout)));
+  if (layout.size.labels) root.append(...groupLabels(layout));
+  return root;
 }
 
 /**
  * @param {{total:number}} score lead.score
- * @param {"sm"|"lg"} [size]
+ * @param {"sm"|"md"|"lg"} [size]
+ * @param {{animate?: boolean}} [options] animate fills the earned pleats in once, group by group
  * @returns {SVGElement}
  */
-export function filterMeter(score, size = "sm") {
-  const s = SIZES[size];
-  const { pleats, groups, width } = layout(score, s);
-  const top = s.cap ? s.cap + CAP_GAP : 0;
-  const bodyBottom = top + s.h;
-  const height = bodyBottom + (s.cap ? CAP_GAP + s.cap : 0) + (s.labels ? LABEL_H : 0);
-  const root = svg("svg", { viewBox: `0 0 ${width} ${height}`, width, height,
-    class: `meter meter-${size}`, role: "img", "aria-label": meterLabel(score) });
+export function filterMeter(score, size = "sm", { animate = false } = {}) {
+  return draw(meterLayout(score, size), { cls: `meter-${size}`, animate, label: meterLabel(score) });
+}
 
-  if (s.cap) {
-    const capW = width - s.pad * 2 + 8;
-    root.append(svg("rect", { x: s.pad - 4, y: 0, width: capW, height: s.cap, rx: s.cap / 2, class: "meter-cap" }));
-    root.append(svg("rect", { x: s.pad - 4, y: bodyBottom + CAP_GAP, width: capW, height: s.cap, rx: s.cap / 2, class: "meter-cap" }));
-  }
-  for (const p of pleats) {
-    root.append(svg("rect", { x: p.x, y: top, width: s.w, height: s.h, rx: s.rx, class: p.on ? "pleat on" : "pleat" }));
-    if (p.on && size === "lg") {
-      root.append(svg("rect", { x: p.x + s.w * 0.28, y: top + 4, width: s.w * 0.16, height: s.h - 8, rx: 1, class: "pleat-fold" }));
-    }
-  }
-  if (s.labels) {
-    for (const g of groups) {
-      root.append(svg("text", { x: g.cx, y: height - 4, "text-anchor": "middle", class: "meter-label" }, g.text));
-    }
-  }
-  return root;
+/**
+ * The large meter with each factor group as a button next to the drawing (never inside it,
+ * so the image keeps its label and no interactive element is nested in it).
+ */
+export function groupMeter(score, { onGroup, animate = false } = {}) {
+  const layout = meterLayout(score, "lg");
+  const buttons = layout.groups.map((g) => el("button", {
+    type: "button", class: "meter-hit",
+    style: `left:${((g.x0 - 4) / layout.width) * 100}%;width:${((g.x1 - g.x0 + 8) / layout.width) * 100}%`,
+    "aria-label": `${g.label}: ${g.points} of ${g.max}. Show why`,
+    onClick: () => onGroup(g.key) }));
+  return el("div", { class: "meter-wrap" },
+    draw(layout, { cls: "meter-lg", animate, label: meterLabel(score) }), buttons);
 }
 
 /** A single factor's pleats, used beside each reason. */
-export function factorPleats(points, max) {
-  const w = 5;
-  const gap = 2.5;
-  const h = 18;
-  const width = max * w + (max - 1) * gap;
-  const root = svg("svg", { viewBox: `0 0 ${width} ${h}`, width, height: h, class: "meter", "aria-hidden": "true" });
-  for (let i = 0; i < max; i += 1) {
-    root.append(svg("rect", { x: i * (w + gap), y: 0, width: w, height: h, rx: 2, class: i < points ? "pleat on" : "pleat" }));
-  }
-  return root;
+export function factorPleats(earned, max, { animate = false } = {}) {
+  return draw(factorLayout(earned, max), { cls: "meter-fx", animate, label: null });
 }

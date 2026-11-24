@@ -33,7 +33,15 @@
   --amber-fill: #ff9f0a;
   --amber-tint: rgba(255, 159, 10, 0.14);
 
-  --pleat-off: rgba(60, 60, 67, 0.13);
+  /* Pleated meter: earned = lit + shaded green faces; unearned = empty recessed wells with a 3:1 outline. */
+  --pleat-lit: #3cc477;
+  --pleat-shade: #168040;
+  --pleat-edge: #0f6234;
+  --well-lit: rgba(60, 60, 67, 0.02);
+  --well-shade: rgba(60, 60, 67, 0.06);
+  --well-lit-sm: rgba(60, 60, 67, 0.07);
+  --well-shade-sm: rgba(60, 60, 67, 0.17);
+  --well-line: rgba(60, 60, 67, 0.6);
   --meter-cap: rgba(60, 60, 67, 0.3);
   --dot-warm: rgba(60, 60, 67, 0.32);
 
@@ -45,6 +53,18 @@
   --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.04), 0 10px 30px rgba(0, 0, 0, 0.06);
   --shadow-pop: 0 2px 6px rgba(0, 0, 0, 0.06), 0 20px 50px rgba(0, 0, 0, 0.14);
   --scrim: rgba(0, 0, 0, 0.18);
+
+  /* Elevation scale: wash (0) < card (1) < hero (2) < popover (3). */
+  --sheen: rgba(255, 255, 255, 0.5);
+  --hero-bg: rgba(255, 255, 255, 0.74);
+  --hero-tint: rgba(31, 157, 85, 0.1);
+  --inset-bg: rgba(255, 255, 255, 0.72);
+  --shadow-hero: 0 2px 4px rgba(0, 0, 0, 0.05), 0 14px 28px rgba(0, 0, 0, 0.07), 0 40px 80px rgba(0, 0, 0, 0.1);
+  --land: rgba(60, 60, 67, 0.07);
+  --land-line: rgba(60, 60, 67, 0.22);
+  --land-territory: rgba(31, 157, 85, 0.13);
+  --land-territory-line: rgba(14, 122, 62, 0.62);
+  --land-active: rgba(31, 157, 85, 0.3);
 
   --radius-s: 10px;
   --radius-m: 14px;
@@ -79,7 +99,14 @@
     --amber-fill: #ff9f0a;
     --amber-tint: rgba(255, 159, 10, 0.16);
 
-    --pleat-off: rgba(235, 235, 245, 0.14);
+    --pleat-lit: #5fe892;
+    --pleat-shade: #25a85c;
+    --pleat-edge: #1c8a4a;
+    --well-lit: rgba(0, 0, 0, 0.22);
+    --well-shade: rgba(0, 0, 0, 0.4);
+    --well-lit-sm: rgba(0, 0, 0, 0.3);
+    --well-shade-sm: rgba(0, 0, 0, 0.55);
+    --well-line: rgba(235, 235, 245, 0.52);
     --meter-cap: rgba(235, 235, 245, 0.32);
     --dot-warm: rgba(235, 235, 245, 0.3);
 
@@ -90,20 +117,31 @@
     --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.35);
     --shadow-pop: 0 2px 6px rgba(0, 0, 0, 0.4), 0 24px 60px rgba(0, 0, 0, 0.55);
     --scrim: rgba(0, 0, 0, 0.45);
+    --sheen: rgba(255, 255, 255, 0.07);
+    --hero-bg: rgba(44, 44, 48, 0.62);
+    --hero-tint: rgba(48, 209, 88, 0.1);
+    --inset-bg: rgba(0, 0, 0, 0.28);
+    --shadow-hero: 0 2px 4px rgba(0, 0, 0, 0.4), 0 16px 32px rgba(0, 0, 0, 0.45), 0 44px 90px rgba(0, 0, 0, 0.55);
+    --land: rgba(235, 235, 245, 0.07);
+    --land-line: rgba(235, 235, 245, 0.2);
+    --land-territory: rgba(48, 209, 88, 0.14);
+    --land-territory-line: rgba(95, 232, 146, 0.7);
+    --land-active: rgba(48, 209, 88, 0.34);
   }
 }
 
 /* Glass falls back to solid surfaces when blur is off or unsupported. */
 @media (prefers-reduced-transparency: reduce) {
-  :root { --glass-bg: var(--surface); --glass-bar: var(--surface); --glass-blur: none; }
+  :root { --glass-bg: var(--surface); --glass-bar: var(--surface); --glass-blur: none; --hero-bg: var(--surface); --inset-bg: var(--fill); --sheen: transparent; }
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  :root { --glass-bg: var(--surface); --glass-bar: var(--surface); }
+  :root { --glass-bg: var(--surface); --glass-bar: var(--surface); --hero-bg: var(--surface); --inset-bg: var(--fill); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
