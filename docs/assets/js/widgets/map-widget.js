@@ -52,8 +52,8 @@ function stateChip(stat, name, at, fit, root) {
 
 function gapNote(gap) {
   return el("div", { class: "gap-note glass", role: "note" },
-    el("strong", { text: `${gap.name}: no Hot leads yet` }),
-    el("p", { text: `${gap.why} ${fmt(gap.warm)} Warm leads are listed.` }),
+    el("strong", { text: `${gap.name}: no Hot leads` }),
+    el("p", { text: `${gap.why} ${fmt(gap.warm)} Warm leads.` }),
     el("a", { href: "#/scoring?section=gaps", text: "Coverage gaps" }));
 }
 

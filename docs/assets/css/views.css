@@ -60,6 +60,9 @@
 .detail-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; }
 .stage-select select { background: var(--accent-tint); color: var(--accent); font-weight: 600; border-radius: 16px; height: 32px; }
 .stage-select::after { background: var(--accent); }
+/* On hold is a safety hold, so it takes the amber reserved for holds. */
+.stage-select.is-hold select { background: var(--amber-tint); color: var(--amber); }
+.stage-select.is-hold::after { background: var(--amber); }
 
 .card {
   background: var(--surface); border-radius: 18px; padding: 18px 20px;

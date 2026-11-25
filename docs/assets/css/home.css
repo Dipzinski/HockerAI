@@ -69,7 +69,9 @@
 .product .btn-primary { align-self: flex-start; }
 
 .callouts { list-style: none; margin: 0; padding: 0; display: grid; align-content: space-between; gap: 8px; min-width: 0; }
-.callout { min-width: 0; }
+/* Each callout starts with its own group of pleats, so it reads as a key to the cartridge beside it. */
+.callout { min-width: 0; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; align-items: start; }
+.callout > .meter { justify-self: start; margin-top: 2px; }
 .callout.is-empty .callout-name { color: var(--text-2); }
 .callout-head { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 600; }
 .callout-pts { font-family: var(--font-rounded); color: var(--text-2); }
@@ -148,7 +150,7 @@
 .state-chip.has-note { border-style: dashed; border-color: var(--text-2); }
 
 .gap-note {
-  position: absolute; left: 0; bottom: 0; z-index: 2; width: min(42%, 262px);
+  position: absolute; left: 0; bottom: 0; z-index: 2; width: min(36%, 220px);
   padding: 7px 11px; border-radius: 14px; font-size: 11.5px; line-height: 1.3;
 }
 .gap-note strong { display: block; font-size: 12px; }

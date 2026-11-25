@@ -1,10 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { territoryStats, coverageGaps, newestEvidence, briefing, spotlightReason, GAP_NOTES, sentenceText, pipelineIsEmpty, shortReason }
-  from "../../docs/assets/js/briefing.js";
+import { territoryStats, coverageGaps, newestEvidence, briefing, spotlightReason, GAP_NOTES, sentenceText, pipelineIsEmpty,
+  shortReason, keepTogether } from "../../docs/assets/js/briefing.js";
 import { breakdown } from "../../docs/assets/js/score.js";
-import { AS_OF, makeLead, warmSeriousLead } from "./fixtures.mjs";
+import { AS_OF, makeLead, programLead, warmSeriousLead } from "./fixtures.mjs";
 
 const leads = [
   makeLead({ id: "m1", state: "MI" }),
@@ -76,12 +76,40 @@ test("pipelineIsEmpty is true only when every tracked stage has no leads", () =>
   assert.equal(pipelineIsEmpty({}, ["reached"]), true);
 });
 
-test("shortReason keeps the first clause and drops dates and windows", () => {
+const NBSP = " ";
+const plain = (s) => s.replaceAll(NBSP, " ");
+
+test("shortReason keeps the first clause, drops citation dates and the data-cut tail", () => {
   const rows = breakdown(makeLead(), AS_OF);
-  const by = (key) => shortReason(rows.find((r) => r.key === key).reason);
+  const by = (key) => plain(shortReason(rows.find((r) => r.key === key).reason));
   assert.equal(by("dust"), "MIOSHA Part 520 Ventilation Control (Mich. R 325.52007)");
-  assert.equal(by("recency"), "Dust evidence dated Oct 15, 2026");
+  assert.equal(by("recency"), "Dust evidence dated Oct 15, 2026, within 12 months");
   assert.equal(by("size"), "50 employees at the site");
   assert.equal(by("industry"), "Metal fabrication & machinery (NAICS 333618)");
-  for (const r of rows) assert.ok(r.reason.includes(shortReason(r.reason)), "only quotes the original");
+});
+
+test("shortReason keeps what explains partial points", () => {
+  const rows = breakdown(programLead(), AS_OF);
+  const size = plain(shortReason(rows.find((r) => r.key === "size").reason));
+  assert.match(size, /just outside the 20–500 core range$/);
+  const older = plain(shortReason("Dust evidence dated Jan 2, 2023, older than 36 months."));
+  assert.equal(older, "Dust evidence dated Jan 2, 2023, older than 36 months");
+  const program = plain(shortReason("Housekeeping (1910.22(a)(1)), issued Mar 2, 2025 during a Combustible Dust NEP inspection."));
+  assert.equal(program, "Housekeeping (1910.22(a)(1)) during a Combustible Dust NEP inspection");
+  assert.equal(plain(shortReason("Combustible Dust NEP inspection, opened Jan 10, 2024.")), "Combustible Dust NEP inspection");
+});
+
+test("shortReason only removes words, never adds or changes them", () => {
+  for (const lead of [makeLead(), programLead(), warmSeriousLead()]) {
+    for (const r of breakdown(lead, AS_OF)) {
+      const words = plain(shortReason(r.reason)).split(" ");
+      const original = r.reason.split(/\s+/).map((w) => w.replace(/[.,]$/, ""));
+      for (const w of words) assert.ok(original.includes(w.replace(/[.,]$/, "")), `"${w}" comes from: ${r.reason}`);
+    }
+  }
+});
+
+test("keepTogether binds the words inside parentheses", () => {
+  assert.equal(keepTogether("Ventilation (Mich. R 325.52007) at site"), `Ventilation (Mich.${NBSP}R${NBSP}325.52007) at site`);
+  assert.equal(keepTogether("no codes here"), "no codes here");
 });

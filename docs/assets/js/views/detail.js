@@ -14,9 +14,12 @@ const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)"
 function stageSelect(lead, ctx) {
   const current = ctx.pipeline.stageOf(lead);
   const select = el("select", { "aria-label": "Pipeline stage",
-    onChange: (e) => ctx.onStageChange(lead, e.target.value) },
+    onChange: (e) => {
+      e.target.parentElement.classList.toggle("is-hold", e.target.value === "hold");
+      ctx.onStageChange(lead, e.target.value);
+    } },
   STAGES.map((s) => el("option", { value: s.id, selected: s.id === current, text: s.label })));
-  return el("span", { class: "select stage-select" }, select);
+  return el("span", { class: current === "hold" ? "select stage-select is-hold" : "select stage-select" }, select);
 }
 
 function header(lead, ctx) {

@@ -68,10 +68,23 @@ export function briefing(data, priority) {
   return { headline, sentence, lines, gaps, hotCount: hot };
 }
 
-/** One short clause of a factor reason, for tight callouts: the first sentence without its date or window tail. */
+const DATE = "[A-Z][a-z]{2} \\d{1,2}, \\d{4}";
+const DATE_TAIL = new RegExp(`,\\s+(?:issued |opened )?${DATE}`, "g");
+const DATA_CUT = new RegExp(`\\s+of the ${DATE} data cut`);
+
+/** Joins the words inside each (…) with no-break spaces so a code like "(Mich. R 325.52007)" never splits. */
+export function keepTogether(text) {
+  return text.replace(/\([^()]*\)/g, (group) => group.replace(/ /g, " "));
+}
+
+/**
+ * A factor reason shortened for the hero callouts: its first sentence, minus citation dates (the
+ * Recency callout gives the evidence date) and the data-cut tail. It only removes words, so the
+ * points it explains (a program inspection, "within 12 months", "just outside the core range") stay.
+ */
 export function shortReason(text) {
-  const first = text.split(/\.\s+(?=[A-Z][a-z]|\d)/)[0];
-  return first.replace(/,\s+(issued|within|just outside|outside)\b.*$/, "").replace(/\.$/, "");
+  const first = text.split(/\.\s+(?=[A-Z][a-z]|\d)/)[0].replace(/\.$/, "");
+  return keepTogether(first.replace(DATA_CUT, "").replace(DATE_TAIL, ""));
 }
 
 /** The factor that best explains why a lead ranks where it does. */

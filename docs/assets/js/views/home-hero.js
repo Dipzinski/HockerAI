@@ -5,7 +5,7 @@ import { breakdown, formatDate } from "../score.js";
 import { briefing, sentenceText, shortReason } from "../briefing.js";
 import { el, fmt } from "../dom.js";
 import { buildHash } from "../router.js";
-import { filterMeter } from "../widgets/filter-meter.js";
+import { filterMeter, factorPleats } from "../widgets/filter-meter.js";
 
 const COUNT_MS = 900;
 
@@ -42,6 +42,7 @@ function briefColumn(data, priority) {
 function callouts(rows, meter) {
   const items = rows.map((row) => {
     const item = el("li", { class: row.points ? "callout" : "callout is-empty" },
+      factorPleats(row.points, row.max),
       el("div", { class: "callout-body" },
         el("div", { class: "callout-head" },
           el("span", { class: "callout-name", text: row.label }),
