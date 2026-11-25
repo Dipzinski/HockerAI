@@ -1,4 +1,5 @@
-duckdb>=1.1
+# DuckDB 2.0 removed Relation.fetchone(), which hocker/ uses; switch those calls to con.execute() before lifting the cap.
+duckdb>=1.1,<2
 requests>=2.31
 anthropic>=0.100,<2
 pydantic>=2.5
