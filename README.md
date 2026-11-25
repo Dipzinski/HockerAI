@@ -6,7 +6,7 @@ Built for Hocker North America, a dust-collection company in Stuart, Florida, wh
 
 **[Live dashboard](https://dipzinski.github.io/HockerAI/)** · [Lead report](outputs/report.md) · [Lead list (CSV)](outputs/leads.csv)
 
-![Dashboard overview: top leads with their 12-pleat score meters, priority count, pipeline, dust signals, and a dot map of leads across the ten states](docs/img/dashboard.png)
+![Dashboard overview: a briefing on new Hot leads, the top lead's 12-pleat score cartridge with the reason behind each factor, a map of leads across the ten states with state outlines, and the next leads in line](docs/img/dashboard.png)
 
 ## The problem
 
@@ -142,6 +142,7 @@ hocker/           Python package: download, load, facilities, standards, tri, ru
 sql/              DuckDB SQL: staging and features
 tests/            pytest: parsing, merging, scoring, verifier, retry loop; tests/js: dashboard logic
 docs/             GitHub Pages dashboard (index.html, assets/ CSS and JS modules, data/leads.json)
+scripts/          builds the dashboard's state outlines (docs/assets/geo) from us-atlas
 outputs/          leads.csv, report.md, run_log.json, briefs/
 v1-prompt-prototype/   the July 2026 prototype (see below)
 ```

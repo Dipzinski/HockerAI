@@ -4,6 +4,7 @@
 
 - **Source:** us-atlas 3.0.1, `states-10m.json` (sha256 `d76b391ccfa8bff601d51e3e3da5d43a89fa46cd5caca72ce731b383be5596d0`),
   a TopoJSON redistribution of the US Census Bureau cartographic boundary files, 2017 edition (public domain).
+  Download: `https://cdn.jsdelivr.net/npm/us-atlas@3.0.1/states-10m.json` (check the sha256 before building).
 - **Conversion:** `node scripts/build-us-geo.mjs <states-10m.json>`. It drops Alaska, Hawaii and the territories,
   drops tiny islands, simplifies each shared arc once (Douglas-Peucker, 0.018 degrees) so neighbouring states stay
   seamless, and rounds to 0.01 degrees. Arcs are delta-encoded integers; states list rings of signed arc references.
