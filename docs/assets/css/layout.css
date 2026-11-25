@@ -1,0 +1,126 @@
+/* App frame: floating glass sidebar, panes, and the three breakpoints. */
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font: 15px/1.45 var(--font);
+  color: var(--text);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(55vw 55vh at 6% 0%, var(--wash-1), transparent 70%),
+    radial-gradient(45vw 50vh at 100% 6%, var(--wash-2), transparent 70%),
+    radial-gradient(60vw 55vh at 55% 108%, var(--wash-3), transparent 70%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent-fill); outline-offset: 2px; border-radius: 6px; }
+[hidden] { display: none !important; }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 252px minmax(0, 1fr);
+  gap: 10px;
+  height: 100vh;
+  height: 100dvh;
+  padding: 10px;
+}
+
+/* Sidebar */
+.sidebar {
+  border-radius: var(--pane-radius);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 10px 12px;
+  z-index: 40;
+}
+.scrim { position: fixed; inset: 0; background: var(--scrim); z-index: 30; }
+
+/* Content and views */
+.content { position: relative; min-width: 0; min-height: 0; }
+.view { display: none; height: 100%; min-height: 0; }
+.app[data-view="home"] #view-home,
+.app[data-view="map"] #view-map,
+.app[data-view="scoring"] #view-scoring { display: block; animation: view-in 0.28s var(--ease); }
+.app[data-view="leads"] #view-leads { display: grid; animation: view-in 0.28s var(--ease); }
+@keyframes view-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.view-home, .view-scoring { overflow-y: auto; padding: 22px 26px 48px; }
+.view-map { overflow-y: auto; padding: 22px 26px 26px; }
+.app[data-view="map"] #view-map { display: flex; flex-direction: column; }
+
+.view-leads { grid-template-columns: minmax(300px, 372px) minmax(0, 1fr); gap: 10px; }
+.list-pane {
+  position: relative;
+  border-radius: var(--pane-radius);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.lead-list { flex: 1; min-height: 0; overflow-y: auto; overflow-anchor: none; margin: 0; padding: 4px 0 16px; list-style: none; }
+.detail-pane { min-height: 0; overflow-y: auto; padding: 6px 22px 48px; }
+
+.state-msg {
+  position: absolute; inset: 0; display: grid; place-content: center; gap: 6px;
+  text-align: center; color: var(--text-2); padding: 24px;
+}
+
+.tabbar { display: none; }
+.icon-btn.sidebar-toggle { display: none; }
+
+/* Tablet: sidebar slides over the content. */
+@media (max-width: 1099px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .sidebar {
+    position: fixed; top: 10px; bottom: 10px; left: 10px; width: 264px;
+    transform: translateX(calc(-100% - 24px));
+    /* Hidden from Tab and screen readers once it has slid away. */
+    visibility: hidden;
+    transition: transform 0.32s var(--ease), visibility 0s linear 0.32s;
+    box-shadow: inset 0 1px 0 var(--glass-highlight), var(--shadow-pop);
+  }
+  .app.sidebar-open .sidebar { transform: none; visibility: visible; transition: transform 0.32s var(--ease), visibility 0s; }
+  .icon-btn.sidebar-toggle { display: inline-grid; }
+}
+
+/* Phone: iOS navigation with a floating glass tab bar. */
+@media (max-width: 759px) {
+  .app { padding: 0; gap: 0; }
+  .sidebar, .scrim, .icon-btn.sidebar-toggle { display: none !important; }
+  .view-home, .view-scoring, .view-map { padding: 14px 16px 112px; }
+  .view-leads { grid-template-columns: minmax(0, 1fr); gap: 0; position: relative; overflow: hidden; }
+  .list-pane { border-radius: 0; border: 0; box-shadow: none; background: transparent;
+    -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .lead-list { padding-bottom: 112px; }
+  .detail-pane {
+    position: absolute; inset: 0; z-index: 20;
+    padding: 0 16px 112px;
+    background-color: var(--bg);
+    background-image: radial-gradient(80vw 50vh at 0% 0%, var(--wash-1), transparent 70%);
+    transform: translateX(100%);
+    visibility: hidden;
+    transition: transform 0.34s var(--ease), visibility 0s linear 0.34s;
+  }
+  .view-leads.has-detail .detail-pane {
+    transform: none; visibility: visible;
+    transition: transform 0.34s var(--ease), visibility 0s;
+  }
+  .tabbar {
+    display: flex; justify-content: space-around; align-items: center;
+    position: fixed; left: 16px; right: 16px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    height: 60px; border-radius: 30px; z-index: 50; padding: 0 6px;
+  }
+}

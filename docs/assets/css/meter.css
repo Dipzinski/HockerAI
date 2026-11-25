@@ -1,0 +1,43 @@
+/* Score meter: a pleated filter cartridge. Earned pleats are solid green folds (lit + shaded face);
+   unearned pleats are empty recessed wells with a visible outline, in both themes. */
+.meter { display: block; overflow: visible; }
+.meter .face { stroke-linejoin: round; stroke-width: var(--stroke, 1); }
+.meter .well .lit { fill: var(--well-lit); }
+.meter .well .shade { fill: var(--well-shade); }
+.meter-sm .well .lit { fill: var(--well-lit-sm); }
+.meter-sm .well .shade { fill: var(--well-shade-sm); }
+.meter .well .face { stroke: var(--well-line); }
+.meter .earned .lit { fill: var(--pleat-lit); }
+.meter .earned .shade { fill: var(--pleat-shade); }
+.meter .earned .face { stroke: var(--pleat-edge); stroke-width: calc(var(--stroke, 1) * 0.55); }
+.meter .rail { fill: var(--meter-cap); opacity: 0.55; }
+.meter .rail.full { fill: var(--pleat-shade); opacity: 1; }
+.meter[data-hl] [data-group] { opacity: 0.35; transition: opacity 0.2s; }
+.meter[data-hl="industry"] [data-group="industry"], .meter[data-hl="dust"] [data-group="dust"],
+.meter[data-hl="recency"] [data-group="recency"], .meter[data-hl="size"] [data-group="size"],
+.meter[data-hl="tri_air"] [data-group="tri_air"] { opacity: 1; }
+.meter .meter-label { font: 600 10.5px var(--font); fill: var(--text-2); }
+.meter .meter-label.full { fill: var(--accent); }
+
+/* The earned pleats fill in once, group by group, from the base of the cartridge. */
+.meter-anim .earned {
+  transform-box: fill-box; transform-origin: 50% 100%;
+  animation: pleat-fill 0.55s var(--ease) both;
+}
+@keyframes pleat-fill { from { transform: scaleY(0.04); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.meter-wrap { position: relative; width: 100%; }
+.meter-wrap .meter { width: 100%; height: auto; }
+.meter-hit {
+  position: absolute; top: -6px; bottom: -4px; padding: 0; border: 0; border-radius: 10px;
+  background: transparent; cursor: pointer; transition: background-color 0.15s;
+}
+.meter-hit:hover { background: var(--hover); }
+.meter-hit:focus-visible { outline: 2px solid var(--accent-fill); outline-offset: 0; }
+
+/* Scoring page: a small cartridge beside its caption. */
+.legend-key { display: inline-flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text-2); text-align: left; }
+.legend-key .meter { flex: none; }
+.gap-card h3 { margin: 0 0 6px; font: 700 16px/1.2 var(--font-display); }
+.gap-card p { margin: 0; font-size: 14.5px; }
+.gap-card:focus-visible { outline: 2px solid var(--accent-fill); outline-offset: 2px; }
